@@ -32,7 +32,10 @@ class Menu:
     def menu(self):
         done = True
         self.menu_back = pygame.image.load('assets/images/background1.jpg')
-       
+        pygame.init()
+        pygame.mixer.music.load('assets/sounds/menu.mp3')
+        pygame.mixer.music.play(loops=-1)
+
 
         font_menu = pygame.font.Font(None, 50)
         pygame.key.set_repeat(0,0)
@@ -216,6 +219,8 @@ class Game():
                     
 
     def main(self):
+        pygame.mixer.music.load('assets/sounds/music1.mp3')
+        pygame.mixer.music.play(loops=-1)
         self.running = True # flag that show is game running or not
         pygame.event.set_grab(True)
 
