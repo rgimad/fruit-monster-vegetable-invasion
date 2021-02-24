@@ -2,6 +2,8 @@ import sys
 import math
 import pygame
 
+window = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 from pygame.locals import (
     RLEACCEL,
     K_UP,
@@ -110,8 +112,8 @@ class TerrainBlock(pygame.sprite.Sprite):
 
 class Game():
     def __init__(self):
-        self.SCREEN_WIDTH = 10*72
-        self.SCREEN_HEIGHT = 10*72
+        surface = pygame.display.get_surface()
+        self.SCREEN_WIDTH,self.SCREEN_HEIGHT = size = surface.get_width(), surface.get_height()
         self.FPS = 60
         self.map = Map()
         self.map.load_from('assets/maps/map1.txt')
