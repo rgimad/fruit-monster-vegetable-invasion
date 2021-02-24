@@ -18,6 +18,55 @@ from pygame.locals import (
     KEYDOWN,
     QUIT,
 )
+class Menu:
+    def __init__(self, punkts):
+        self.punkts = punkts
+
+    def render(self, screen, font, num_punkt):
+        for i in self.punkts:
+            if num_punkt == i[5]:
+                screen.blit(font.render(i[2], 2, i[4]), (i[0], i[1]))
+            else:
+                screen.blit(font.render(i[2], 2, i[3]), (i[0], i[1]))
+    def menu(self):
+        done = True
+        self.menu_back = pygame.image.load('assets/images/background1.jpg')
+       
+
+        font_menu = pygame.font.Font(None, 50)
+        pygame.key.set_repeat(0,0)
+        pygame.mouse.set_visible(True)
+        punkt = None
+        while done:
+            screen.blit(self.menu_back, (0, 0))
+            mp = pygame.mouse.get_pos()
+            self.render(screen, font_menu, punkt)
+            
+        
+            for i in self.punkts:
+                if mp[0]>=i[0] and mp[0]<i[0]+130 and mp[1]>=i[1]-150 and mp[1]<i[1]-100:
+                    punkt = 0
+                elif  mp[0]>=i[0] and mp[0]<i[0]+330 and mp[1]>=i[1]-40 and mp[1]<i[1]-20:
+                    punkt = 1  
+                elif mp[0]>=i[0] and mp[0]<i[0]+110 and mp[1]>=i[1] and mp[1]<i[1]+100:
+                    punkt = 2   
+                else :
+                    punkt= None
+            for e in pygame.event.get():
+                if e.type == pygame.QUIT:
+                    sys.exit()
+                if e.type == pygame.KEYDOWN:
+                    if e.key == pygame.K_ESCAPE:
+                       sys.exit()
+                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 :
+                         if punkt == 0:
+                             self.game1 = Game()
+                             self.game1.main()  
+                         elif punkt == 2:
+                               exit()
+     
+            window.blit(screen, (0, 30))
+            pygame.display.flip()
 
 # Define a player object by extending pygame.sprite.Sprite
 # The surface drawn on the screen is now an attribute of 'player'
@@ -206,8 +255,11 @@ class Game():
         pygame.quit()
         sys.exit()
 
+pygame.font.init()                   
+punkts = [(1000, 520, u'Играть', (11, 0, 77), (250,250,30), 0),
+          (1000, 610, u'Выбор персонажа', (11, 0, 77), (250,250,30), 1),
+          (1000, 700, u'Выйти', (11, 0, 77), (250,250,30), 2)]
 
 if __name__ == "__main__":
-    game = Game()
-    game.main()
-    main()
+    game = Menu(punkts)
+    game.menu()
