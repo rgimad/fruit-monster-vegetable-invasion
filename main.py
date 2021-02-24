@@ -1,6 +1,7 @@
 import sys
 import math
 import pygame
+import random as rd
 
 window = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
@@ -67,6 +68,20 @@ class Menu:
      
             window.blit(screen, (0, 30))
             pygame.display.flip()
+
+class Mob(pygame.sprite.Sprite):
+    def __init__(self, game):
+        super(Mob, self).__init__()
+        self.game = game
+        self.surf = pygame.image.load("assets/images/mob1.png").convert()
+        self.surf.set_colorkey((255, 255, 255), RLEACCEL)
+        self.mobRandomSpawnOnX = (70, 140, 210, 1000, 444, 555, 666)
+        self.mobRandomSpawnOnY = (70, 140, 210, 1000, 666, 444, 555)
+        print(rd.choice(self.mobRandomSpawnOnX), rd.choice(self.mobRandomSpawnOnY))
+        self.rect = self.surf.get_rect(topleft = (rd.choice(self.mobRandomSpawnOnX), rd.choice(self.mobRandomSpawnOnY)))
+        #self.rect = self.surf.get_rect(topleft = (self.game.SCREEN_WIDTH / 7, self.game.SCREEN_HEIGHT / 7))
+        self.dir_x = 0
+        self.dir_y = 0
 
 # Define a player object by extending pygame.sprite.Sprite
 # The surface drawn on the screen is now an attribute of 'player'
@@ -178,6 +193,11 @@ class Game():
         self.font = pygame.font.Font(None, 30)
 
         self.player = Player(self) # create a player
+        # trying to create an array of objects in class Mob
+        self.listMob = []
+        for i in range(10):
+            self.listMob.append(Mob(i))
+
         self.bricks = pygame.sprite.Group()
         self.terrain_blocks = pygame.sprite.Group()
 
@@ -240,6 +260,8 @@ class Game():
 
             # Draw the player on the screen
             self.screen.blit(self.player.surf, self.player.rect)
+            for i in range(10):
+                self.screen.blit(self.listMob[i].surf, self.listMob[i].rect)
 
             pygame.draw.line(self.screen, (0, 30, 225), 
                      [self.player.rect.x, self.player.rect.y], 
