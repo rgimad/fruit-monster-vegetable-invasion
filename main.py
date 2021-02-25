@@ -73,18 +73,23 @@ class Menu:
             pygame.display.flip()
 
 class Mob(pygame.sprite.Sprite):
-    def __init__(self, game):
+    def __init__(self, x, y):
         super(Mob, self).__init__()
         self.game = game
         self.surf = pygame.image.load("assets/images/mob1.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
-        self.mobRandomSpawnOnX = (70, 140, 210, 1000, 444, 555, 666)
-        self.mobRandomSpawnOnY = (70, 140, 210, 1000, 666, 444, 555)
-        print(rd.choice(self.mobRandomSpawnOnX), rd.choice(self.mobRandomSpawnOnY))
-        self.rect = self.surf.get_rect(topleft = (rd.choice(self.mobRandomSpawnOnX), rd.choice(self.mobRandomSpawnOnY)))
+        #self.mobRandomSpawnOnX = ([72 * i for i in range(1, 12)])
+        #self.mobRandomSpawnOnY = ([72 * i for i in range(1, 12)])
+        #print(rd.choice(self.mobRandomSpawnOnX), rd.choice(self.mobRandomSpawnOnY))
+        #self.rect = self.surf.get_rect(topleft = (rd.choice(self.mobRandomSpawnOnX), rd.choice(self.mobRandomSpawnOnY)))
         #self.rect = self.surf.get_rect(topleft = (self.game.SCREEN_WIDTH / 7, self.game.SCREEN_HEIGHT / 7))
+        self.rect = self.surf.get_rect(center = (x, y))
         self.dir_x = 0
         self.dir_y = 0
+        
+    def update(self):
+        self.rect.x += rd.randint(-5,5)
+        self.rect.y += rd.randint(-5,5)
 
 # Define a player object by extending pygame.sprite.Sprite
 # The surface drawn on the screen is now an attribute of 'player'
@@ -97,10 +102,9 @@ class Player(pygame.sprite.Sprite):
         self.surf = pygame.image.load("assets/images/bear2.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         # create rect from surface and set initial coords (by default they;re (0, 0
-        self.rect = self.surf.get_rect(topleft = (self.game.SCREEN_WIDTH / 2, self.game.SCREEN_HEIGHT / 2))
+        self.rect = self.surf.get_rect(center = (self.game.SCREEN_WIDTH / 2, self.game.SCREEN_HEIGHT / 2))
         self.dir_x = 0
         self.dir_y = 1
-        
 
     # Move the sprite based on user keypresses
     def update(self, pressed_keys):
@@ -184,6 +188,8 @@ class Game():
         self.FPS = 60
         self.map = Map()
         self.map.load_from('assets/maps/map1.txt')
+        self.mapSpawn = Map()
+        self.mapSpawn.load_from('assets/maps/spawnMobMap1.txt')
         self.running = False
         
         pygame.init()
@@ -191,15 +197,18 @@ class Game():
         #info_object = pygame.display.Info()
         #self.SCREEN_WIDTH, self.SCREEN_HEIGHT = info_object.current_w, info_object.current_h
         
-        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT) ) #, flags = pygame.FULLSCREEN )
+        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT)) #, flags = pygame.FULLSCREEN )
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(None, 30)
 
         self.player = Player(self) # create a player
+        self.mobs = pygame.sprite.Group()
+        #self.mob = Mob(self) # create a 1st mob
         # trying to create an array of objects in class Mob
-        self.listMob = []
-        for i in range(10):
-            self.listMob.append(Mob(i))
+        # this block needs to create an array mobs
+        # self.listMob = []
+        # for i in range(10):
+        #     self.listMob.append(Mob[i])
 
         self.bricks = pygame.sprite.Group()
         self.terrain_blocks = pygame.sprite.Group()
@@ -214,8 +223,18 @@ class Game():
                 elif cell == '.':
                     new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
                     self.terrain_blocks.add(new_terrain_block)
+                # elif cell == '@':
+                #     new_mob = Mob(j*self.map.cell_size, i*self.map.cell_size)
+                #     self.mobs.add(new_mob)
                 else:
                     print('map error: incorrect cell type')
+    
+    def draw_spawnMobMap(self):
+        for i in range(self.mapSpawn.rows):
+            for j in range(self.mapSpawn.cols):
+                cell = self.mapSpawn.cell(i, j)
+                new_mob = Mob(j*self.mapSpawn.cell_size, i*self.mapSpawn.cell_size)
+                self.mobs.add(new_mob)
                     
 
     def main(self):
@@ -225,6 +244,7 @@ class Game():
         pygame.event.set_grab(True)
 
         self.draw_map()
+        self.draw_spawnMobMap()
         while self.running:
             self.clock.tick(self.FPS)  # delay according to fps
             
@@ -253,6 +273,12 @@ class Game():
 
             # Update the player sprite based on user keypresses
             self.player.update(pressed_keys)
+            self.mobs.update()
+            #self.mob.update()
+            # trying to create an array of objects in class Mob
+            # this block needs to create an array mobs
+            #for i in range(10):
+                #self.listMob(i).update()
 
             #self.screen.fill((0, 0, 0))
             
@@ -263,10 +289,15 @@ class Game():
             for entity in self.bricks:
                 self.screen.blit(entity.surf, entity.rect)
 
+            for entity in self.mobs:
+                self.screen.blit(entity.surf, entity.rect)
+
             # Draw the player on the screen
             self.screen.blit(self.player.surf, self.player.rect)
-            for i in range(10):
-                self.screen.blit(self.listMob[i].surf, self.listMob[i].rect)
+            #self.screen.blit(self.mobs.surf, self.mobs.rect)
+            #self.screen.blit(self.mob.surf, self.mob.rect)
+            #for i in range(10):
+            #    self.screen.blit(self.listMob[i].surf, self.listMob[i].rect)
 
             pygame.draw.line(self.screen, (0, 30, 225), 
                      [self.player.rect.x, self.player.rect.y], 
