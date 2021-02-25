@@ -2,9 +2,17 @@ import sys
 import math
 import pygame
 import random as rd
+import PIL
+from PIL import Image
 
 window = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+info_object = pygame.display.Info()
+SCREEN_WIDTH, SCREEN_HEIGHT = info_object.current_w, info_object.current_h
+constx = SCREEN_WIDTH/1366
+consty = SCREEN_HEIGHT/768
+print(consty)
+
 from pygame.locals import (
     RLEACCEL,
     K_UP,
@@ -20,8 +28,12 @@ from pygame.locals import (
     QUIT,
 )
 class Menu:
-    def __init__(self, punkts):
-        self.punkts = punkts
+    def __init__(self):
+        self.punkts = [
+            (1000*constx, 520*consty, u'Играть', (250, 97, 3), (255, 165, 0), 0),
+            (1000*constx, 610*consty, u'Выбор персонажа', (250, 97, 3), (255, 165, 0), 1),
+            (1000*constx, 700*consty, u'Выйти', (250, 97, 3), (255, 165, 0),  2)
+        ]
 
     def render(self, screen, font, num_punkt):
         for i in self.punkts:
@@ -31,7 +43,12 @@ class Menu:
                 screen.blit(font.render(i[2], 2, i[3]), (i[0], i[1]))
     def menu(self):
         done = True
-        self.menu_back = pygame.image.load('assets/images/background1.jpg')
+        self.menu_back = pygame.image.load('assets/images/background3.png')
+        img = Image.open( 'assets/images/background3.png')
+        img = img.resize ((SCREEN_WIDTH, SCREEN_HEIGHT), PIL.Image.ANTIALIAS)
+        img.save('assets/images/background3resize.png')
+        self.menu_back = pygame.image.load('assets/images/background3resize.png')
+
         pygame.init()
         pygame.mixer.music.load('assets/sounds/menu.mp3')
         pygame.mixer.music.play(loops=-1)
@@ -48,11 +65,11 @@ class Menu:
             
         
             for i in self.punkts:
-                if mp[0]>=i[0] and mp[0]<i[0]+130 and mp[1]>=i[1]-150 and mp[1]<i[1]-100:
+                if mp[0]>=i[0] and mp[0]<i[0]+130 and mp[1]>=i[1]-180*consty and mp[1]<i[1]-155*consty:
                     punkt = 0
-                elif  mp[0]>=i[0] and mp[0]<i[0]+330 and mp[1]>=i[1]-40 and mp[1]<i[1]-20:
+                elif  mp[0]>=i[0] and mp[0]<i[0]+330 and mp[1]>=i[1]-83*consty and mp[1]<i[1]-70*consty:
                     punkt = 1  
-                elif mp[0]>=i[0] and mp[0]<i[0]+110 and mp[1]>=i[1] and mp[1]<i[1]+100:
+                elif mp[0]>=i[0] and mp[0]<i[0]+110 and mp[1]>=i[1] and mp[1]<i[1]+100*consty:
                     punkt = 2   
                 else :
                     punkt= None
@@ -69,7 +86,6 @@ class Menu:
                          elif punkt == 2:
                                exit()
      
-            window.blit(screen, (0, 30))
             pygame.display.flip()
 
 class Mob(pygame.sprite.Sprite):
@@ -109,25 +125,25 @@ class Player(pygame.sprite.Sprite):
     # Move the sprite based on user keypresses
     def update(self, pressed_keys):
         dx, dy = 0, 0
-        if pressed_keys[K_UP]:# or pressed_keys[K_w]:
+        if pressed_keys[K_UP] or pressed_keys[K_w]:
             #dx, dy = 0, -5
             #dy -= 5
             self.rect.move_ip(0, -5)
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(0, 5)
-        if pressed_keys[K_DOWN]:# or pressed_keys[K_s]:
+        if pressed_keys[K_DOWN] or pressed_keys[K_s]:
             #dx, dy = 0, 5
             #dy += 5
             self.rect.move_ip(0, 5)
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(0, -5)
-        if pressed_keys[K_LEFT]:# or pressed_keys[K_a]:
+        if pressed_keys[K_LEFT] or pressed_keys[K_a]:
             #dx, dy = -5, 0
             #dx -= 5
             self.rect.move_ip(-5, 0)
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(5, 0)
-        if pressed_keys[K_RIGHT]:# or pressed_keys[K_d]:
+        if pressed_keys[K_RIGHT] or pressed_keys[K_d]:
             #dx, dy = 5, 0
             #dx += 5
             self.rect.move_ip(5, 0)
@@ -313,11 +329,8 @@ class Game():
         pygame.quit()
         sys.exit()
 
-pygame.font.init()                   
-punkts = [(1000, 520, u'Играть', (11, 0, 77), (250,250,30), 0),
-          (1000, 610, u'Выбор персонажа', (11, 0, 77), (250,250,30), 1),
-          (1000, 700, u'Выйти', (11, 0, 77), (250,250,30), 2)]
+pygame.font.init()     
 
 if __name__ == "__main__":
-    game = Menu(punkts)
+    game = Menu()
     game.menu()
