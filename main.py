@@ -103,6 +103,13 @@ class Mob(pygame.sprite.Sprite):
         if pygame.sprite.spritecollideany(self, self.game.bricks):
             self.rect.move_ip(0, -temp_x)
             self.rect.move_ip(-temp_y, 0)
+        if pygame.sprite.spritecollideany(self.game.player, self.game.mobs):#spritecollide(self, self.game.player, 0):
+            self.rect.move_ip(0, -temp_x)
+            self.rect.move_ip(-temp_y, 0)
+            self.game.player.rect.move_ip(0, 50)
+            self.game.player.rect.move_ip(50, 0)
+            self.game.player.health -= 1
+            print("player mob collision")            
             
         # Keep mobs on the screen
         elif self.rect.left < 0:
@@ -131,8 +138,6 @@ class Player(pygame.sprite.Sprite):
 
     # Move the sprite based on user keypresses
     def update(self, pressed_keys):
-        collision = self.game.font.render("He's crashed", True, pygame.Color('white'))
-
         if pressed_keys[K_UP] or pressed_keys[K_w]:
             self.rect.move_ip(0, -5)
             if pygame.sprite.spritecollideany(self, self.game.bricks):
@@ -260,6 +265,8 @@ class Game():
 
         self.bricks = pygame.sprite.Group()
         self.terrain_blocks = pygame.sprite.Group()
+        #self.all_sprites = pygame.sprite.Group()
+        #self.all_sprites.add(self.player)
 
     def draw_map(self):
         for i in range(self.map.rows):
@@ -323,6 +330,7 @@ class Game():
                 if cell == '@':
                     new_mob = Mob(j*self.mapSpawn.cell_size, i*self.mapSpawn.cell_size, self)
                     self.mobs.add(new_mob)
+                    #self.all_sprites.add(new_mob)
                     
 
     def main(self):
@@ -360,6 +368,7 @@ class Game():
                 # Get all the keys currently pressed
                 pressed_keys = pygame.key.get_pressed()
 
+                #self.all_sprites.update(self)
                 # Update the player sprite based on user keypresses
                 self.player.update(pressed_keys)
                 # Update mobs movement
@@ -384,13 +393,14 @@ class Game():
                         [self.player.rect.x + 700*self.player.dir_x, self.player.rect.y + 700*self.player.dir_y], 2)
 
                 # Draw fps ounter
-                fps = self.font.render('FPS: ' + str(int(self.clock.get_fps())), True, pygame.Color('white'))
+                fps = self.font.render('FPS: ' + str(int(self.clock.get_fps())) + '     ' + str(self.player.health) + '    Health', True, pygame.Color('white'))
                 self.screen.blit(fps, (50, 30))
 
                 # Update the display
                 pygame.display.flip()
+            # check status of player's health 
             if self.player.health <= 0:
-                self.screen.blit(self.font.render("Game over!", 2, pygame.Color('white')), (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
+                self.screen.blit(self.font.render("Game over!", True, pygame.Color('white')), (self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2))
                 print('0 hp - Game over!')
                 self.running = False
         pygame.quit()
