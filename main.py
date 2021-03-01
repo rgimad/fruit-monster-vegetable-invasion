@@ -193,9 +193,10 @@ class TerrainBlock(pygame.sprite.Sprite):
 class House(pygame.sprite.Sprite):
     def __init__(self, x, y, block_type):
         super(House, self).__init__()
-        for i in range(1,7):
+        for i in range(0,10):
             if block_type == str(i):
                 st = "assets/images/house/house" + str(i) + ".png"
+                print(st)
                 self.surf = pygame.image.load(st)
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
@@ -270,6 +271,18 @@ class Game():
                 elif cell == '6':
                     house6 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.bricks.add(house6)  
+                elif cell == '7':
+                    most1 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.terrain_blocks.add(most1)  
+                elif cell == '8':
+                    most2 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.terrain_blocks.add(most2)     
+                elif cell == '9':
+                    most3 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.terrain_blocks.add(most3)  
+                elif cell == '0':
+                    most4 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.terrain_blocks.add(most4) 
                 elif cell == 'T':
                     tree1 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.bricks.add(tree1) 
