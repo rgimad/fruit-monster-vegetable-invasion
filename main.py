@@ -341,68 +341,67 @@ class Game():
 
         self.draw_map()
         self.draw_spawnMobMap()
-        while self.running:
-            while self.player.health != 0: # this cicle defines health of our player
-                self.clock.tick(self.FPS)  # delay according to fps
-                
-                for event in pygame.event.get(): # check events
-                    
-                    if event.type == KEYDOWN:         # when user hits some button
-                        if event.key == K_ESCAPE:     # Esc -> quit
-                            self.running = False
+        while self.player.health != 0 and self.running: # this cicle defines health of our player
+            self.clock.tick(self.FPS)  # delay according to fps
 
-                    elif event.type == pygame.MOUSEMOTION:
-                        m_x, m_y = event.pos
-                        l = math.sqrt((m_x - self.player.rect.x)**2 + (m_y - self.player.rect.y)**2)
-                        if l > 0:
-                            self.player.dir_x = (m_x - self.player.rect.x) / l
-                            self.player.dir_y = (m_y - self.player.rect.y) / l
-                        
-                            
-                    elif event.type == pygame.QUIT:   # if user closes the widow -> quit
+            for event in pygame.event.get(): # check events
+                
+                if event.type == pygame.KEYDOWN:         # when user hits some button
+                    if event.key == pygame.K_ESCAPE:     # Esc -> quit
                         self.running = False
 
-                    #else:
-                    #    print(event.type, pygame.mouse.get_pos())
+                elif event.type == pygame.MOUSEMOTION:
+                    m_x, m_y = event.pos
+                    l = math.sqrt((m_x - self.player.rect.x)**2 + (m_y - self.player.rect.y)**2)
+                    if l > 0:
+                        self.player.dir_x = (m_x - self.player.rect.x) / l
+                        self.player.dir_y = (m_y - self.player.rect.y) / l
+                    
+                elif event.type == pygame.QUIT:   # if user closes the widow -> quit
+                    self.running = False
 
-                # Get all the keys currently pressed
-                pressed_keys = pygame.key.get_pressed()
+                #else:
+                #    print(event.type, pygame.mouse.get_pos())
 
-                #self.all_sprites.update(self)
-                # Update the player sprite based on user keypresses
-                self.player.update(pressed_keys)
-                # Update mobs movement
-                self.mobs.update()
+            # Get all the keys currently pressed
+            pressed_keys = pygame.key.get_pressed()
 
-                #self.screen.fill((0, 0, 0))
-                
-                for entity in self.terrain_blocks:
-                    self.screen.blit(entity.surf, entity.rect)
+            #self.all_sprites.update(self)
+            # Update the player sprite based on user keypresses
+            self.player.update(pressed_keys)
+            # Update mobs movement
+            self.mobs.update()
 
-                for entity in self.bricks:
-                    self.screen.blit(entity.surf, entity.rect)
-                # Draw mobs on the screen
-                for entity in self.mobs:
-                    self.screen.blit(entity.surf, entity.rect)
+            #self.screen.fill((0, 0, 0))
+            
+            for entity in self.terrain_blocks:
+                self.screen.blit(entity.surf, entity.rect)
 
-                # Draw the player on the screen
-                self.screen.blit(self.player.surf, self.player.rect)
+            for entity in self.bricks:
+                self.screen.blit(entity.surf, entity.rect)
+            # Draw mobs on the screen
+            for entity in self.mobs:
+                self.screen.blit(entity.surf, entity.rect)
 
-                pygame.draw.line(self.screen, (0, 30, 225), 
-                        [self.player.rect.x, self.player.rect.y], 
-                        [self.player.rect.x + 700*self.player.dir_x, self.player.rect.y + 700*self.player.dir_y], 2)
+            # Draw the player on the screen
+            self.screen.blit(self.player.surf, self.player.rect)
 
-                # Draw fps ounter
-                fps = self.font.render('FPS: ' + str(int(self.clock.get_fps())) + '     ' + str(self.player.health) + '    Health', True, pygame.Color('white'))
-                self.screen.blit(fps, (50, 30))
+            pygame.draw.line(self.screen, (0, 30, 225), 
+                    [self.player.rect.x, self.player.rect.y], 
+                    [self.player.rect.x + 700*self.player.dir_x, self.player.rect.y + 700*self.player.dir_y], 2)
 
-                # Update the display
-                pygame.display.flip()
-            # check status of player's health 
-            if self.player.health <= 0:
-                self.screen.blit(self.font.render("Game over!", True, pygame.Color('white')), (self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2))
-                print('0 hp - Game over!')
-                self.running = False
+            # Draw fps ounter
+            fps = self.font.render('FPS: ' + str(int(self.clock.get_fps())) + '     ' + str(self.player.health) + '    Health', True, pygame.Color('white'))
+            self.screen.blit(fps, (50, 30))
+
+            # Update the display
+            pygame.display.flip()
+        # check status of player's health 
+        if self.player.health <= 0:
+            self.screen.blit(self.font.render("Game over!", True, pygame.Color('white')), (self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2))
+            print('0 hp - Game over!')
+            self.running = False
+            
         pygame.quit()
         sys.exit()
 
