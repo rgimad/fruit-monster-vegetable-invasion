@@ -190,6 +190,18 @@ class TerrainBlock(pygame.sprite.Sprite):
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
 
+class House(pygame.sprite.Sprite):
+    def __init__(self, x, y, block_type):
+        super(House, self).__init__()
+        for i in range(1,7):
+            if block_type == str(i):
+                st = "assets/images/house/house" + str(i) + ".png"
+                print(st)
+                self.surf = pygame.image.load(st)
+        self.surf.set_colorkey((255, 255, 255), RLEACCEL)
+        self.rect = self.surf.get_rect(topleft = (x, y))
+
+
 class Game():
     def __init__(self):
         surface = pygame.display.get_surface()
@@ -227,6 +239,24 @@ class Game():
                 elif cell == '.':
                     new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
                     self.terrain_blocks.add(new_terrain_block)
+                elif cell == '1':
+                    house1 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(house1)
+                elif cell == '2':
+                    house2 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(house2)    
+                elif cell == '3':
+                    house3 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(house3)             
+                elif cell == '4':
+                    house4 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(house4)                 
+                elif cell == '5':
+                    house5 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(house5)  
+                elif cell == '6':
+                    house6 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(house6)                      
                 else:
                     print('map error: incorrect cell type')
     
