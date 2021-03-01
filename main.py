@@ -192,7 +192,10 @@ class Player(pygame.sprite.Sprite):
         if self.rect.right > self.game.SCREEN_WIDTH:
             self.rect.right = self.game.SCREEN_WIDTH
         if self.rect.top <= 0:
-            self.rect.top = 0  
+            self.rect.top = 0
+        if self.rect.bottom >= self.game.SCREEN_HEIGHT:
+            self.rect.bottom = self.game.SCREEN_HEIGHT
+    
     def shoot(self):
         bullet = Bullet(self.rect.x,self.rect.y)
         #self.all_sprites.add(bullet)
