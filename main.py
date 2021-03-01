@@ -186,7 +186,7 @@ class Brick(pygame.sprite.Sprite):
 class TerrainBlock(pygame.sprite.Sprite):
     def __init__(self, x, y, block_type = 1):
         super(TerrainBlock, self).__init__()
-        self.surf = pygame.image.load("assets/images/terrain1.png" if block_type == 1 else "assets/images/terrain2.png").convert()
+        self.surf = pygame.image.load("assets/images/gross.png" if block_type == 1 else "assets/images/terrain2.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
 
@@ -196,10 +196,23 @@ class House(pygame.sprite.Sprite):
         for i in range(1,7):
             if block_type == str(i):
                 st = "assets/images/house/house" + str(i) + ".png"
-                print(st)
                 self.surf = pygame.image.load(st)
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
+
+class Tree(pygame.sprite.Sprite):
+    def __init__(self, x, y, block_type):
+        super(Tree, self).__init__()
+        if block_type == 'T':
+            self.surf = pygame.image.load("assets/images/tree/tree1.png") 
+        elif block_type == 'O':
+            self.surf = pygame.image.load("assets/images/tree/tree2.png") 
+        elif block_type == 'X':
+            self.surf = pygame.image.load("assets/images/tree/tree3.png") 
+        elif block_type == 'A':
+            self.surf = pygame.image.load("assets/images/tree/tree4.png")             
+        self.surf.set_colorkey((255, 255, 255), RLEACCEL)
+        self.rect = self.surf.get_rect(topleft = (x, y))        
 
 
 class Game():
@@ -256,7 +269,19 @@ class Game():
                     self.bricks.add(house5)  
                 elif cell == '6':
                     house6 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(house6)                      
+                    self.bricks.add(house6)  
+                elif cell == 'T':
+                    tree1 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(tree1) 
+                elif cell == 'O':
+                    tree2 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(tree2) 
+                elif cell == 'A':
+                    tree3 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(tree3) 
+                elif cell == 'X':
+                    tree4 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(tree4)                                     
                 else:
                     print('map error: incorrect cell type')
     
