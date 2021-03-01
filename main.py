@@ -46,7 +46,7 @@ class Menu:
         done = True
         self.menu_back = pygame.image.load('assets/images/background1.png')
         img = Image.open( 'assets/images/background1.png')
-        img = img.resize ((SCREEN_WIDTH, SCREEN_HEIGHT), PIL.Image.ANTIALIAS)
+        img = img.resize((SCREEN_WIDTH, SCREEN_HEIGHT), PIL.Image.ANTIALIAS)
         img.save('assets/images/backgroundResize.png')
         self.menu_back = pygame.image.load('assets/images/backgroundResize.png')
 
@@ -103,10 +103,7 @@ class Mob(pygame.sprite.Sprite):
         if pygame.sprite.spritecollideany(self, self.game.bricks):
             self.rect.move_ip(0, -temp_x)
             self.rect.move_ip(-temp_y, 0)
-        # if pygame.sprite.spritecollideany(self, self.game.player):
-        #     self.rect.move_ip(0, -100 * temp_x)
-        #     self.rect.move_ip(-100 * temp_y, 0)
-        #     print("He's crashed")
+            
         # Keep mobs on the screen
         elif self.rect.left < 0:
             self.rect.left = 0
@@ -130,37 +127,44 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.surf.get_rect(center = (self.game.SCREEN_WIDTH / 2, self.game.SCREEN_HEIGHT / 2))
         self.dir_x = 0
         self.dir_y = 1
+        self.health = 3
 
     # Move the sprite based on user keypresses
     def update(self, pressed_keys):
+        collision = self.game.font.render("He's crashed", True, pygame.Color('white'))
+
         if pressed_keys[K_UP] or pressed_keys[K_w]:
             self.rect.move_ip(0, -5)
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(0, 5)
             if pygame.sprite.spritecollideany(self, self.game.mobs):
-                print("Game Over! He's crashed")
-                self.game.running = Falsea
+                print("He's crashed")
+                self.rect.move_ip(0, 100)
+                self.health -= 1
         if pressed_keys[K_DOWN] or pressed_keys[K_s]:
             self.rect.move_ip(0, 5)
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(0, -5)
             if pygame.sprite.spritecollideany(self, self.game.mobs):
-                print("Game Over! He's crashed")
-                self.game.running = False
+                print("He's crashed")
+                self.rect.move_ip(0, -100)
+                self.health -= 1
         if pressed_keys[K_LEFT] or pressed_keys[K_a]:
             self.rect.move_ip(-5, 0)
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(5, 0)
             if pygame.sprite.spritecollideany(self, self.game.mobs):
-                print("Game Over! He's crashed")
-                self.game.running = False
+                print("Game over! He's crashed")
+                self.rect.move_ip(100, 0)
+                self.health -= 1
         if pressed_keys[K_RIGHT] or pressed_keys[K_d]:
             self.rect.move_ip(5, 0)
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(-5, 0)
             if pygame.sprite.spritecollideany(self, self.game.mobs):
-                print("Game Over! He's crashed")
-                self.game.running = False
+                print("Game over! He's crashed")
+                self.rect.move_ip(-100, 0)
+                self.health -= 1
 
         # Keep player on the screen
         if self.rect.left < 0:
@@ -233,7 +237,7 @@ class Tree(pygame.sprite.Sprite):
 class Game():
     def __init__(self):
         surface = pygame.display.get_surface()
-        self.SCREEN_WIDTH,self.SCREEN_HEIGHT = size = surface.get_width(), surface.get_height()
+        self.SCREEN_WIDTH, self.SCREEN_HEIGHT = size = surface.get_width(), surface.get_height()
         self.FPS = 60
         self.map = Map()
         self.map.load_from('assets/maps/map2.txt')
@@ -330,61 +334,65 @@ class Game():
         self.draw_map()
         self.draw_spawnMobMap()
         while self.running:
-            self.clock.tick(self.FPS)  # delay according to fps
-            
-            for event in pygame.event.get(): # check events
+            while self.player.health != 0: # this cicle defines health of our player
+                self.clock.tick(self.FPS)  # delay according to fps
                 
-                if event.type == KEYDOWN:         # when user hits some button
-                    if event.key == K_ESCAPE:     # Esc -> quit
+                for event in pygame.event.get(): # check events
+                    
+                    if event.type == KEYDOWN:         # when user hits some button
+                        if event.key == K_ESCAPE:     # Esc -> quit
+                            self.running = False
+
+                    elif event.type == pygame.MOUSEMOTION:
+                        m_x, m_y = event.pos
+                        l = math.sqrt((m_x - self.player.rect.x)**2 + (m_y - self.player.rect.y)**2)
+                        if l > 0:
+                            self.player.dir_x = (m_x - self.player.rect.x) / l
+                            self.player.dir_y = (m_y - self.player.rect.y) / l
+                        
+                            
+                    elif event.type == pygame.QUIT:   # if user closes the widow -> quit
                         self.running = False
 
-                elif event.type == pygame.MOUSEMOTION:
-                    m_x, m_y = event.pos
-                    l = math.sqrt((m_x - self.player.rect.x)**2 + (m_y - self.player.rect.y)**2)
-                    if l > 0:
-                        self.player.dir_x = (m_x - self.player.rect.x) / l
-                        self.player.dir_y = (m_y - self.player.rect.y) / l
-                    
-                        
-                elif event.type == pygame.QUIT:   # if user closes the widow -> quit
-                    self.running = False
+                    #else:
+                    #    print(event.type, pygame.mouse.get_pos())
 
-                #else:
-                #    print(event.type, pygame.mouse.get_pos())
+                # Get all the keys currently pressed
+                pressed_keys = pygame.key.get_pressed()
 
-            # Get all the keys currently pressed
-            pressed_keys = pygame.key.get_pressed()
+                # Update the player sprite based on user keypresses
+                self.player.update(pressed_keys)
+                # Update mobs movement
+                self.mobs.update()
 
-            # Update the player sprite based on user keypresses
-            self.player.update(pressed_keys)
-            # Update mobs movement
-            self.mobs.update()
+                #self.screen.fill((0, 0, 0))
+                
+                for entity in self.terrain_blocks:
+                    self.screen.blit(entity.surf, entity.rect)
 
-            #self.screen.fill((0, 0, 0))
-            
-            for entity in self.terrain_blocks:
-                self.screen.blit(entity.surf, entity.rect)
+                for entity in self.bricks:
+                    self.screen.blit(entity.surf, entity.rect)
+                # Draw mobs on the screen
+                for entity in self.mobs:
+                    self.screen.blit(entity.surf, entity.rect)
 
-            for entity in self.bricks:
-                self.screen.blit(entity.surf, entity.rect)
-            # Draw mobs on the screen
-            for entity in self.mobs:
-                self.screen.blit(entity.surf, entity.rect)
+                # Draw the player on the screen
+                self.screen.blit(self.player.surf, self.player.rect)
 
-            # Draw the player on the screen
-            self.screen.blit(self.player.surf, self.player.rect)
+                pygame.draw.line(self.screen, (0, 30, 225), 
+                        [self.player.rect.x, self.player.rect.y], 
+                        [self.player.rect.x + 700*self.player.dir_x, self.player.rect.y + 700*self.player.dir_y], 2)
 
-            pygame.draw.line(self.screen, (0, 30, 225), 
-                     [self.player.rect.x, self.player.rect.y], 
-                     [self.player.rect.x + 700*self.player.dir_x, self.player.rect.y + 700*self.player.dir_y], 2)
+                # Draw fps ounter
+                fps = self.font.render('FPS: ' + str(int(self.clock.get_fps())), True, pygame.Color('white'))
+                self.screen.blit(fps, (50, 30))
 
-            # Draw fps ounter
-            fps = self.font.render('FPS: ' + str(int(self.clock.get_fps())), True, pygame.Color('white'))
-            self.screen.blit(fps, (50, 30))
-
-            # Update the display
-            pygame.display.flip()
-
+                # Update the display
+                pygame.display.flip()
+            if self.player.health <= 0:
+                self.screen.blit(self.font.render("Game over!", 2, pygame.Color('white')), (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
+                print('0 hp - Game over!')
+                self.running = False
         pygame.quit()
         sys.exit()
 
