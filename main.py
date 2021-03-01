@@ -11,6 +11,7 @@ info_object = pygame.display.Info()
 SCREEN_WIDTH, SCREEN_HEIGHT = info_object.current_w, info_object.current_h
 constx = SCREEN_WIDTH / 1366
 consty = SCREEN_HEIGHT / 768
+bullet_img = pygame.image.load('assets/images/arrow.png')
 
 from pygame.locals import (
     RLEACCEL,
@@ -25,6 +26,7 @@ from pygame.locals import (
     K_d,
     KEYDOWN,
     QUIT,
+    K_SPACE,
 )
 
 class Menu:
@@ -120,7 +122,20 @@ class Mob(pygame.sprite.Sprite):
             self.rect.top = 0
         elif self.rect.bottom >= self.game.SCREEN_HEIGHT:
             self.rect.bottom = self.game.SCREEN_HEIGHT
+          
 
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x,y):
+        super(Bullet, self).__init__()
+        self.x = x
+        self.y = y
+        self.speed_x = 8
+        self.speed_y = 0
+
+    def update(self):   
+        if self.x <= SCREEN_WIDTH :
+              screen.blit(bullet_img,(self.x,self.y))
+        self.x += self.speed_x
 # Define a player object by extending pygame.sprite.Sprite
 # The surface drawn on the screen is now an attribute of 'player'
 class Player(pygame.sprite.Sprite):
@@ -177,9 +192,11 @@ class Player(pygame.sprite.Sprite):
         if self.rect.right > self.game.SCREEN_WIDTH:
             self.rect.right = self.game.SCREEN_WIDTH
         if self.rect.top <= 0:
-            self.rect.top = 0
-        if self.rect.bottom >= self.game.SCREEN_HEIGHT:
-            self.rect.bottom = self.game.SCREEN_HEIGHT
+            self.rect.top = 0  
+    def shoot(self):
+        bullet = Bullet(self.rect.x,self.rect.y)
+        #self.all_sprites.add(bullet)
+        self.game.bullets.add(bullet)  
 
 class Map():
     def __init__(self):
@@ -262,7 +279,7 @@ class Game():
         self.player = Player(self)
          # Create a set of mobs - Sprite
         self.mobs = pygame.sprite.Group()
-
+        self.bullets = pygame.sprite.Group()
         self.bricks = pygame.sprite.Group()
         self.terrain_blocks = pygame.sprite.Group()
         #self.all_sprites = pygame.sprite.Group()
@@ -349,6 +366,8 @@ class Game():
                 if event.type == pygame.KEYDOWN:         # when user hits some button
                     if event.key == pygame.K_ESCAPE:     # Esc -> quit
                         self.running = False
+                    elif event.key == K_SPACE:
+                        self.player.shoot()           
 
                 elif event.type == pygame.MOUSEMOTION:
                     m_x, m_y = event.pos
@@ -385,7 +404,7 @@ class Game():
 
             # Draw the player on the screen
             self.screen.blit(self.player.surf, self.player.rect)
-
+            self.bullets.update()
             pygame.draw.line(self.screen, (0, 30, 225), 
                     [self.player.rect.x, self.player.rect.y], 
                     [self.player.rect.x + 700*self.player.dir_x, self.player.rect.y + 700*self.player.dir_y], 2)
