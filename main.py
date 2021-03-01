@@ -121,7 +121,7 @@ class Player(pygame.sprite.Sprite):
         super(Player, self).__init__()
         self.game = game # reference to Game object in which player is playing
         #self.surf = pygame.Surface((75, 75))
-        self.surf = pygame.image.load("assets/images/bear2.png").convert()
+        self.surf = pygame.image.load("assets/images/player2.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         # create rect from surface and set initial coords
         self.rect = self.surf.get_rect(center = (self.game.SCREEN_WIDTH / 2, self.game.SCREEN_HEIGHT / 2))
@@ -165,7 +165,7 @@ class Map():
         self.matrix = None
         self.cell_size = 72
 
-    def load_from(self, filepath = 'assets/maps/map1.txt'):
+    def load_from(self, filepath = 'assets/maps/map2.txt'):
         self.path = filepath
         f = open(filepath)
         self.matrix = f.read().split('\n')
@@ -196,9 +196,9 @@ class Game():
         self.SCREEN_WIDTH,self.SCREEN_HEIGHT = size = surface.get_width(), surface.get_height()
         self.FPS = 60
         self.map = Map()
-        self.map.load_from('assets/maps/map1.txt')
+        self.map.load_from('assets/maps/map2.txt')
         self.mapSpawn = Map()
-        self.mapSpawn.load_from('assets/maps/spawnMobMap1.txt')
+        self.mapSpawn.load_from('assets/maps/spawnMobMap2.txt')
         self.running = False
         
         pygame.init()
