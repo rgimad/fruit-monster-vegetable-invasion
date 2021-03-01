@@ -103,7 +103,10 @@ class Mob(pygame.sprite.Sprite):
         if pygame.sprite.spritecollideany(self, self.game.bricks):
             self.rect.move_ip(0, -temp_x)
             self.rect.move_ip(-temp_y, 0)
-
+        # if pygame.sprite.spritecollideany(self, self.game.player):
+        #     self.rect.move_ip(0, -100 * temp_x)
+        #     self.rect.move_ip(-100 * temp_y, 0)
+        #     print("He's crashed")
         # Keep mobs on the screen
         elif self.rect.left < 0:
             self.rect.left = 0
@@ -134,18 +137,30 @@ class Player(pygame.sprite.Sprite):
             self.rect.move_ip(0, -5)
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(0, 5)
+            if pygame.sprite.spritecollideany(self, self.game.mobs):
+                print("Game Over! He's crashed")
+                self.game.running = Falsea
         if pressed_keys[K_DOWN] or pressed_keys[K_s]:
             self.rect.move_ip(0, 5)
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(0, -5)
+            if pygame.sprite.spritecollideany(self, self.game.mobs):
+                print("Game Over! He's crashed")
+                self.game.running = False
         if pressed_keys[K_LEFT] or pressed_keys[K_a]:
             self.rect.move_ip(-5, 0)
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(5, 0)
+            if pygame.sprite.spritecollideany(self, self.game.mobs):
+                print("Game Over! He's crashed")
+                self.game.running = False
         if pressed_keys[K_RIGHT] or pressed_keys[K_d]:
             self.rect.move_ip(5, 0)
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(-5, 0)
+            if pygame.sprite.spritecollideany(self, self.game.mobs):
+                print("Game Over! He's crashed")
+                self.game.running = False
 
         # Keep player on the screen
         if self.rect.left < 0:
@@ -196,7 +211,6 @@ class House(pygame.sprite.Sprite):
         for i in range(0,10):
             if block_type == str(i):
                 st = "assets/images/house/house" + str(i) + ".png"
-                print(st)
                 self.surf = pygame.image.load(st)
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
