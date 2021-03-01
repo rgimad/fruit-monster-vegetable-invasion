@@ -91,7 +91,7 @@ class Mob(pygame.sprite.Sprite):
     def __init__(self, x, y, game):
         super(Mob, self).__init__()
         self.game = game
-        self.surf = pygame.image.load("assets/images/mob1.png").convert()
+        self.surf = pygame.image.load("assets/images/mob2.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(center = (x, y))
         
