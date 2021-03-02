@@ -1,6 +1,7 @@
 import sys
 import math
 import pygame
+#from moviepy.editor import VideoFileClip # library to add video in proj
 import random as rd
 import PIL
 from PIL import Image
@@ -12,6 +13,11 @@ SCREEN_WIDTH, SCREEN_HEIGHT = info_object.current_w, info_object.current_h
 constx = SCREEN_WIDTH / 1366
 consty = SCREEN_HEIGHT / 768
 bullet_img = pygame.image.load('assets/images/arrow.png')
+
+# Add intro in game
+# pygame.display.set_caption('Intro')
+# clip = VideoFileClip('assets/videos/intro.mp4')
+# clip.preview()
 
 from pygame.locals import (
     RLEACCEL,
@@ -369,6 +375,7 @@ class Game():
                 if event.type == pygame.KEYDOWN:         # when user hits some button
                     if event.key == pygame.K_ESCAPE:     # Esc -> quit
                         self.running = False
+                        intro.stop()
                     elif event.key == K_SPACE:
                         self.player.shoot()           
 
