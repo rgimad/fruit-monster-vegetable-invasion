@@ -143,6 +143,7 @@ class Bullet(pygame.sprite.Sprite):
         if self.x <= SCREEN_WIDTH :
               screen.blit(bullet_img,(self.x,self.y))
         self.x += self.speed_x
+
 # Define a player object by extending pygame.sprite.Sprite
 # The surface drawn on the screen is now an attribute of 'player'
 class Player(pygame.sprite.Sprite):
@@ -207,6 +208,27 @@ class Player(pygame.sprite.Sprite):
         bullet = Bullet(self.rect.x,self.rect.y)
         #self.all_sprites.add(bullet)
         self.game.bullets.add(bullet)  
+
+class Camera():
+    def __init__(self, x, y, area_width, area_height):
+        self.x = x
+        self.y = y
+        self.area_width = area_width
+        self.area_height = area_height
+        self.speed = 10
+    
+    def follow(self, player):
+        if (player.rect.x - self.x)*2 > self.area_width:
+            self.x += self.speed
+        if (player.rect.x - self.x)*2 < -self.area_width:
+            self.x -= self.speed
+        if (player.rect.y - self.y)*2 > self.area_height:
+            self.y += self.speed
+        if (player.rect.y - self.y)*2 < -self.area_height:
+            self.y -= self.speed
+
+    def is_inside(self, obj_x, obj_y):
+        return abs(obj_x - self.x)*2 < self.area_width and abs(obj_y - self.y)*2 < self.area_height
 
 class Map():
     def __init__(self):
@@ -302,6 +324,14 @@ class Game():
         #self.all_sprites = pygame.sprite.Group()
         #self.all_sprites.add(self.player)
 
+        cam_aw = (self.SCREEN_WIDTH // self.map.cell_size)*self.map.cell_size
+        cam_ah = (self.SCREEN_HEIGHT // self.map.cell_size)*self.map.cell_size
+        #cam_aw *= cam_aw * 8 // 10
+        #cam_ah *= cam_ah * 8 // 10
+        cam_x = 0 #cam_aw // 2
+        cam_y = 0 #cam_ah // 2
+        self.camera = Camera(cam_x, cam_y, cam_aw, cam_ah)
+
     def draw_map(self):
         for i in range(self.map.rows):
             for j in range(self.map.cols):
@@ -375,6 +405,8 @@ class Game():
 
         self.draw_map()
         self.draw_spawnMobMap()
+        print((self.player.rect.x, self.player.rect.y))
+        print((self.camera.x, self.camera.y))
         while self.player.health != 0 and self.running: # this cicle defines health of our player
             self.clock.tick(self.FPS)  # delay according to fps
 
@@ -423,15 +455,16 @@ class Game():
             """
 
             for entity in itertools.chain(self.terrain_blocks, self.bricks, self.mobs):
-                if abs(entity.rect.x - self.player.rect.x) <= self.map.cell_size*20 and abs(entity.rect.y - self.player.rect.y) <= self.map.cell_size*20:
-                    self.screen.blit(entity.surf, (entity.rect.x - self.player.rect.x, entity.rect.y - self.player.rect.y))
+                if self.camera.is_inside(entity.rect.x, entity.rect.y) or True:
+                    self.screen.blit(entity.surf, (entity.rect.x - self.camera.x, entity.rect.y - self.camera.y))
 
             # Draw the player on the screen
-            self.screen.blit(self.player.surf, self.player.rect)
-            self.bullets.update()
+            self.screen.blit(self.player.surf, (self.player.rect.x - self.camera.x, self.player.rect.y - self.camera.y))  #self.screen.blit(self.player.surf, self.player.rect)
+            self.camera.follow(self.player)
+            #self.bullets.update()
             pygame.draw.line(self.screen, (0, 30, 225), 
-                    [self.player.rect.x, self.player.rect.y], 
-                    [self.player.rect.x + 700*self.player.dir_x, self.player.rect.y + 700*self.player.dir_y], 2)
+                    [self.player.rect.x - self.camera.x, self.player.rect.y - self.camera.y], 
+                    [self.player.rect.x + 700*self.player.dir_x - self.camera.x, self.player.rect.y + 700*self.player.dir_y - self.camera.y], 2)
 
             # Draw fps ounter
             fps = self.font.render('FPS: ' + str(int(self.clock.get_fps())) + '     ' + str(self.player.health) + '    Health', True, pygame.Color('white'))
