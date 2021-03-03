@@ -154,7 +154,7 @@ class Player(pygame.sprite.Sprite):
         self.surf = pygame.image.load("assets/images/player2.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         # create rect from surface and set initial coords
-        self.rect = self.surf.get_rect(center = (self.game.SCREEN_WIDTH / 2, self.game.SCREEN_HEIGHT / 2))
+        self.rect = self.surf.get_rect(center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))  # was self.game.SCREEN_WIDTH / 2
         self.dir_x = 0
         self.dir_y = 1
         self.health = 3
@@ -216,16 +216,27 @@ class Camera():
         self.area_width = area_width
         self.area_height = area_height
         self.speed = 10
+        self.inner_bound = 0.7
     
     def follow(self, player):
-        if (player.rect.x - self.x)*2 > self.area_width:
-            self.x += self.speed
-        if (player.rect.x - self.x)*2 < -self.area_width:
-            self.x -= self.speed
-        if (player.rect.y - self.y)*2 > self.area_height:
-            self.y += self.speed
-        if (player.rect.y - self.y)*2 < -self.area_height:
-            self.y -= self.speed
+        dx, dy = 0, 0
+        if (player.rect.x - self.x)*2 > self.area_width*self.inner_bound:
+            dx = self.speed
+        if (player.rect.x - self.x)*2 < -self.area_width*self.inner_bound:
+            dx = -self.speed
+        if (player.rect.y - self.y)*2 > self.area_height*self.inner_bound:
+            dy = self.speed
+        if (player.rect.y - self.y)*2 < -self.area_height*self.inner_bound:
+            dy = -self.speed
+        #new_x, new_y = self.x + dx, self.y + dy
+        #print(new_x - self.area_width // 2, 118)
+        #if new_x - self.area_width // 2 + 8 >= 118:#(self.area_width * 3 // 10):
+        #    self.x = new_x
+        #if new_y - self.area_height // 2 + 8 >= 32:#(self.area_height * 3 // 10):
+        #    self.y = new_y
+        
+        self.x += dx
+        self.y += dy
 
     def is_inside(self, obj_x, obj_y):
         return abs(obj_x - self.x)*2 < self.area_width and abs(obj_y - self.y)*2 < self.area_height
@@ -324,12 +335,11 @@ class Game():
         #self.all_sprites = pygame.sprite.Group()
         #self.all_sprites.add(self.player)
 
-        cam_aw = (self.SCREEN_WIDTH // self.map.cell_size)*self.map.cell_size
-        cam_ah = (self.SCREEN_HEIGHT // self.map.cell_size)*self.map.cell_size
-        #cam_aw = cam_aw * 8 // 10
-        #cam_ah = cam_ah * 8 // 10
-        cam_x = 0#cam_aw // 2
-        cam_y = 0#cam_ah // 2
+        cam_aw = (self.SCREEN_WIDTH // self.map.cell_size)*self.map.cell_size + 1
+        cam_ah = (self.SCREEN_HEIGHT // self.map.cell_size)*self.map.cell_size + 1
+        #cam_aw = cam_aw * 7 // 10
+        #cam_ah = cam_ah * 7 // 10
+        cam_x, cam_y = self.player.rect.x, self.player.rect.y
         self.camera = Camera(cam_x, cam_y, cam_aw, cam_ah)
 
     def draw_map(self):
@@ -421,10 +431,10 @@ class Game():
 
                 elif event.type == pygame.MOUSEMOTION:
                     m_x, m_y = event.pos
-                    l = math.sqrt((m_x - (self.player.rect.x - self.camera.x))**2 + (m_y - (self.player.rect.y - self.camera.y))**2)
+                    l = math.sqrt((m_x - (self.player.rect.x - self.camera.x + SCREEN_WIDTH//2))**2 + (m_y - (self.player.rect.y - self.camera.y + SCREEN_HEIGHT//2))**2)
                     if l > 0:
-                        self.player.dir_x = (m_x - (self.player.rect.x - self.camera.x)) / l
-                        self.player.dir_y = (m_y - (self.player.rect.y - self.camera.y)) / l
+                        self.player.dir_x = (m_x - (self.player.rect.x - self.camera.x + SCREEN_WIDTH//2)) / l
+                        self.player.dir_y = (m_y - (self.player.rect.y - self.camera.y + SCREEN_HEIGHT//2)) / l
                     
                 elif event.type == pygame.QUIT:   # if user closes the widow -> quit
                     self.running = False
@@ -455,16 +465,18 @@ class Game():
             """
 
             for entity in itertools.chain(self.terrain_blocks, self.bricks, self.mobs):
-                if self.camera.is_inside(entity.rect.x, entity.rect.y) or True:
-                    self.screen.blit(entity.surf, (entity.rect.x - self.camera.x, entity.rect.y - self.camera.y))
+                if self.camera.is_inside(entity.rect.x, entity.rect.y):# or True:
+                    #print(entity.rect.x, entity.rect.x - self.camera.x + SCREEN_WIDTH//2) #118
+                    #print(entity.rect.y, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2) #32
+                    self.screen.blit(entity.surf, (entity.rect.x - self.camera.x + SCREEN_WIDTH//2, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2))
 
             # Draw the player on the screen
-            self.screen.blit(self.player.surf, (self.player.rect.x - self.camera.x, self.player.rect.y - self.camera.y))  #self.screen.blit(self.player.surf, self.player.rect)
+            self.screen.blit(self.player.surf, (self.player.rect.x - self.camera.x + SCREEN_WIDTH//2, self.player.rect.y - self.camera.y + SCREEN_HEIGHT//2))  #self.screen.blit(self.player.surf, self.player.rect)
             self.camera.follow(self.player)
             #self.bullets.update()
             pygame.draw.line(self.screen, (0, 30, 225), 
-                    [self.player.rect.x - self.camera.x, self.player.rect.y - self.camera.y], 
-                    [self.player.rect.x + 700*self.player.dir_x - self.camera.x, self.player.rect.y + 700*self.player.dir_y - self.camera.y], 2)
+                    [self.player.rect.x - self.camera.x + SCREEN_WIDTH//2, self.player.rect.y - self.camera.y + SCREEN_HEIGHT//2], 
+                    [self.player.rect.x + 700*self.player.dir_x - self.camera.x + SCREEN_WIDTH//2, self.player.rect.y + 700*self.player.dir_y - self.camera.y + SCREEN_HEIGHT//2], 2)
 
             # Draw fps ounter
             fps = self.font.render('FPS: ' + str(int(self.clock.get_fps())) + '     ' + str(self.player.health) + '    Health', True, pygame.Color('white'))
