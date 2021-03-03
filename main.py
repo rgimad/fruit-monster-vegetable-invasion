@@ -423,8 +423,8 @@ class Game():
             """
 
             for entity in itertools.chain(self.terrain_blocks, self.bricks, self.mobs):
-                if abs(entity.rect.x - self.player.rect.x) <= self.map.cell_size*10 and abs(entity.rect.y - self.player.rect.y) <= self.map.cell_size*10:
-                    self.screen.blit(entity.surf, entity.rect)
+                if abs(entity.rect.x - self.player.rect.x) <= self.map.cell_size*20 and abs(entity.rect.y - self.player.rect.y) <= self.map.cell_size*20:
+                    self.screen.blit(entity.surf, (entity.rect.x - self.player.rect.x, entity.rect.y - self.player.rect.y))
 
             # Draw the player on the screen
             self.screen.blit(self.player.surf, self.player.rect)
