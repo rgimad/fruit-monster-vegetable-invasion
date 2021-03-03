@@ -12,7 +12,6 @@ info_object = pygame.display.Info()
 SCREEN_WIDTH, SCREEN_HEIGHT = info_object.current_w, info_object.current_h
 constx = SCREEN_WIDTH / 1366
 consty = SCREEN_HEIGHT / 768
-bullet_img = pygame.image.load('assets/images/arrow.png')
 
 # Add intro in game
 # pygame.display.set_caption('Intro')
@@ -131,17 +130,27 @@ class Mob(pygame.sprite.Sprite):
           
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x,y):
+    def __init__(self, x,y,x1,y1):
         super(Bullet, self).__init__()
-        self.x = x
-        self.y = y
-        self.speed_x = 8
-        self.speed_y = 0
+        self.bullet_img = pygame.image.load('assets/images/arrow.png')
+        self.x = x  
+        self.y = y  
+        self.speed = 8
+        self.speed_x1 = x1
+        self.speed_y1 = y1
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEMOTION:
+                    self.m_x, self.m_y = event.pos
+                    l = math.sqrt((self.m_x - self.x)**2 + (self.m_y - self.y)**2)
+                    if l > 0:
+                        self.speed_x1 = (self.m_x - self.x) / l
+                        self.speed_y1 = (self.m_y - self.y) / l
 
     def update(self):   
         if self.x <= SCREEN_WIDTH :
-              screen.blit(bullet_img,(self.x,self.y))
-        self.x += self.speed_x
+                  screen.blit(self.bullet_img,(self.x,self.y))
+        self.x += self.speed * self.speed_x1
+        self.y += self.speed * self.speed_y1
 # Define a player object by extending pygame.sprite.Sprite
 # The surface drawn on the screen is now an attribute of 'player'
 class Player(pygame.sprite.Sprite):
@@ -203,7 +212,7 @@ class Player(pygame.sprite.Sprite):
             self.rect.bottom = self.game.SCREEN_HEIGHT
     
     def shoot(self):
-        bullet = Bullet(self.rect.x,self.rect.y)
+        bullet = Bullet(self.rect.x,self.rect.y,self.dir_x,self.dir_y)
         #self.all_sprites.add(bullet)
         self.game.bullets.add(bullet)  
 
@@ -378,7 +387,9 @@ class Game():
                         intro.stop()
                     elif event.key == K_SPACE:
                         self.player.shoot()           
-
+                if event.type == pygame.MOUSEBUTTONDOWN:         
+                    if event.button == 1:
+                        self.player.shoot()
                 elif event.type == pygame.MOUSEMOTION:
                     m_x, m_y = event.pos
                     l = math.sqrt((m_x - self.player.rect.x)**2 + (m_y - self.player.rect.y)**2)
