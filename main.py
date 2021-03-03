@@ -1,7 +1,7 @@
 import sys
 import math
 import pygame
-#from moviepy.editor import VideoFileClip # library to add video in proj
+# from moviepy.editor import VideoFileClip # library to add video in proj
 import random as rd
 import PIL
 from PIL import Image
@@ -15,8 +15,8 @@ consty = SCREEN_HEIGHT / 768
 
 # Add intro in game
 # pygame.display.set_caption('Intro')
-# clip = VideoFileClip('assets/videos/intro.mp4')
-# clip.preview()
+# intro = VideoFileClip('assets/videos/intro.mp4')
+# intro.preview()
 
 from pygame.locals import (
     RLEACCEL,
@@ -130,7 +130,7 @@ class Mob(pygame.sprite.Sprite):
           
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x,y,x1,y1):
+    def __init__(self, x, y, x1, y1):
         super(Bullet, self).__init__()
         self.bullet_img = pygame.image.load('assets/images/arrow.png')
         self.x = x  
@@ -147,8 +147,6 @@ class Bullet(pygame.sprite.Sprite):
                         self.speed_y1 = (self.m_y - self.y) / l
 
     def update(self):   
-        if self.x <= SCREEN_WIDTH :
-                  screen.blit(self.bullet_img,(self.x,self.y))
         self.x += self.speed * self.speed_x1
         self.y += self.speed * self.speed_y1
 # Define a player object by extending pygame.sprite.Sprite
@@ -158,6 +156,7 @@ class Player(pygame.sprite.Sprite):
         super(Player, self).__init__()
         self.game = game # reference to Game object in which player is playing
         #self.surf = pygame.Surface((75, 75))
+        self.orig_img = pygame.image.load("assets/images/player2.png")
         self.surf = pygame.image.load("assets/images/player2.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         # create rect from surface and set initial coords
@@ -210,11 +209,16 @@ class Player(pygame.sprite.Sprite):
             self.rect.top = 0
         if self.rect.bottom >= self.game.SCREEN_HEIGHT:
             self.rect.bottom = self.game.SCREEN_HEIGHT
+
+    def point_at(self, x, y):
+        direction = pygame.math.Vector2(x, y) - self.rect.center
+        angle = direction.angle_to((1, 0))
+        self.surf = pygame.transform.rotate(self.orig_img, angle)
+        self.rect = self.surf.get_rect(center=self.rect.center)
     
     def shoot(self):
         bullet = Bullet(self.rect.x,self.rect.y,self.dir_x,self.dir_y)
-        #self.all_sprites.add(bullet)
-        self.game.bullets.add(bullet)  
+        self.game.bullets.add(bullet)
 
 class Map():
     def __init__(self):
@@ -380,14 +384,10 @@ class Game():
             self.clock.tick(self.FPS)  # delay according to fps
 
             for event in pygame.event.get(): # check events
-                
                 if event.type == pygame.KEYDOWN:         # when user hits some button
                     if event.key == pygame.K_ESCAPE:     # Esc -> quit
-                        self.running = False
-                        intro.stop()
-                    elif event.key == K_SPACE:
-                        self.player.shoot()           
-                if event.type == pygame.MOUSEBUTTONDOWN:         
+                        self.running = False         
+                elif event.type == pygame.MOUSEBUTTONDOWN:         
                     if event.button == 1:
                         self.player.shoot()
                 elif event.type == pygame.MOUSEMOTION:
@@ -396,7 +396,6 @@ class Game():
                     if l > 0:
                         self.player.dir_x = (m_x - self.player.rect.x) / l
                         self.player.dir_y = (m_y - self.player.rect.y) / l
-                    
                 elif event.type == pygame.QUIT:   # if user closes the widow -> quit
                     self.running = False
 
@@ -405,13 +404,13 @@ class Game():
 
             # Get all the keys currently pressed
             pressed_keys = pygame.key.get_pressed()
-
-            #self.all_sprites.update(self)
+            # Rotating sprite depending on mouse motion
+            self.player.point_at(*pygame.mouse.get_pos())
             # Update the player sprite based on user keypresses
             self.player.update(pressed_keys)
             # Update mobs movement
             self.mobs.update()
-
+            self.bullets.update()
             #self.screen.fill((0, 0, 0))
             
             for entity in self.terrain_blocks:
@@ -425,10 +424,14 @@ class Game():
 
             # Draw the player on the screen
             self.screen.blit(self.player.surf, self.player.rect)
-            self.bullets.update()
+            
+            for entity in self.bullets:
+                if entity.x <= SCREEN_WIDTH:
+                    screen.blit(entity.bullet_img, (entity.x, entity.y))
+
             pygame.draw.line(self.screen, (0, 30, 225), 
-                    [self.player.rect.x, self.player.rect.y], 
-                    [self.player.rect.x + 700*self.player.dir_x, self.player.rect.y + 700*self.player.dir_y], 2)
+                    [self.player.rect.x + 36, self.player.rect.y + 38], 
+                    [self.player.rect.x + 300*self.player.dir_x, self.player.rect.y + 300*self.player.dir_y], 2)
 
             # Draw fps ounter
             fps = self.font.render('FPS: ' + str(int(self.clock.get_fps())) + '     ' + str(self.player.health) + '    Health', True, pygame.Color('white'))
