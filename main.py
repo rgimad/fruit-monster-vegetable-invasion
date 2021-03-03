@@ -1,6 +1,7 @@
 import sys
 import math
 import pygame
+import itertools
 #from moviepy.editor import VideoFileClip # library to add video in proj
 import random as rd
 import PIL
@@ -195,12 +196,12 @@ class Player(pygame.sprite.Sprite):
         # Keep player on the screen
         if self.rect.left < 0:
             self.rect.left = 0
-        if self.rect.right > self.game.SCREEN_WIDTH:
-            self.rect.right = self.game.SCREEN_WIDTH
+        #if self.rect.right > self.game.SCREEN_WIDTH:
+        #    self.rect.right = self.game.SCREEN_WIDTH
         if self.rect.top <= 0:
             self.rect.top = 0
-        if self.rect.bottom >= self.game.SCREEN_HEIGHT:
-            self.rect.bottom = self.game.SCREEN_HEIGHT
+        #if self.rect.bottom >= self.game.SCREEN_HEIGHT:
+        #    self.rect.bottom = self.game.SCREEN_HEIGHT
     
     def shoot(self):
         bullet = Bullet(self.rect.x,self.rect.y)
@@ -221,9 +222,16 @@ class Map():
         self.matrix = f.read().split('\n')
         self.rows = len(self.matrix)
         self.cols = len(self.matrix[0])
+        #print('))', self.matrix[self.rows - 1], '))')
+        if self.matrix[self.rows - 1] != self.cols:
+            self.rows -= 1
+        print('rows = ', self.rows, 'cols = ', self.cols)
 
     def cell(self, row, col):
-        return self.matrix[row][col]        
+        #try:
+        return self.matrix[row][col]  
+        #except:
+        #    print('row = ', row, 'col = ', col)      
 
 
 class Brick(pygame.sprite.Sprite):
@@ -375,7 +383,7 @@ class Game():
                 if event.type == pygame.KEYDOWN:         # when user hits some button
                     if event.key == pygame.K_ESCAPE:     # Esc -> quit
                         self.running = False
-                        intro.stop()
+                        #intro.stop()
                     elif event.key == K_SPACE:
                         self.player.shoot()           
 
@@ -403,6 +411,7 @@ class Game():
 
             #self.screen.fill((0, 0, 0))
             
+            """
             for entity in self.terrain_blocks:
                 self.screen.blit(entity.surf, entity.rect)
 
@@ -411,6 +420,11 @@ class Game():
             # Draw mobs on the screen
             for entity in self.mobs:
                 self.screen.blit(entity.surf, entity.rect)
+            """
+
+            for entity in itertools.chain(self.terrain_blocks, self.bricks, self.mobs):
+                if abs(entity.rect.x - self.player.rect.x) <= self.map.cell_size*10 and abs(entity.rect.y - self.player.rect.y) <= self.map.cell_size*10:
+                    self.screen.blit(entity.surf, entity.rect)
 
             # Draw the player on the screen
             self.screen.blit(self.player.surf, self.player.rect)
