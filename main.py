@@ -326,10 +326,10 @@ class Game():
 
         cam_aw = (self.SCREEN_WIDTH // self.map.cell_size)*self.map.cell_size
         cam_ah = (self.SCREEN_HEIGHT // self.map.cell_size)*self.map.cell_size
-        #cam_aw *= cam_aw * 8 // 10
-        #cam_ah *= cam_ah * 8 // 10
-        cam_x = 0 #cam_aw // 2
-        cam_y = 0 #cam_ah // 2
+        #cam_aw = cam_aw * 8 // 10
+        #cam_ah = cam_ah * 8 // 10
+        cam_x = 0#cam_aw // 2
+        cam_y = 0#cam_ah // 2
         self.camera = Camera(cam_x, cam_y, cam_aw, cam_ah)
 
     def draw_map(self):
@@ -421,10 +421,10 @@ class Game():
 
                 elif event.type == pygame.MOUSEMOTION:
                     m_x, m_y = event.pos
-                    l = math.sqrt((m_x - self.player.rect.x)**2 + (m_y - self.player.rect.y)**2)
+                    l = math.sqrt((m_x - (self.player.rect.x - self.camera.x))**2 + (m_y - (self.player.rect.y - self.camera.y))**2)
                     if l > 0:
-                        self.player.dir_x = (m_x - self.player.rect.x) / l
-                        self.player.dir_y = (m_y - self.player.rect.y) / l
+                        self.player.dir_x = (m_x - (self.player.rect.x - self.camera.x)) / l
+                        self.player.dir_y = (m_y - (self.player.rect.y - self.camera.y)) / l
                     
                 elif event.type == pygame.QUIT:   # if user closes the widow -> quit
                     self.running = False
