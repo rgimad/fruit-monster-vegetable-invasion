@@ -18,6 +18,22 @@ consty = SCREEN_HEIGHT / 768
 # intro = VideoFileClip('assets/videos/intro.mp4')
 # intro.preview()
 
+pygame.init()
+shoot_sound = pygame.mixer.Sound('assets/sounds/shoot3.mp3')
+shoot_sound.set_volume(0.1)
+
+damage_sound = []
+for snd in ['assets/sounds/damage1.mp3', 'assets/sounds/damage2.mp3']:
+    damage_sound.append(pygame.mixer.Sound(snd))
+
+rev_sound = pygame.mixer.Sound('assets/sounds/rev.mp3')
+rev_sound.set_volume(1.5)
+
+collision_sound = pygame.mixer.Sound('assets/sounds/collision.mp3')
+
+buulet_to_brick_sound = pygame.mixer.Sound('assets/sounds/bullet_to_brick.mp3')
+
+
 from pygame.locals import (
     RLEACCEL,
     K_UP,
@@ -32,6 +48,8 @@ from pygame.locals import (
     KEYDOWN,
     QUIT,
     K_SPACE,
+    K_m,
+    K_n,
 )
 
 class Menu:
@@ -101,6 +119,7 @@ class Mob(pygame.sprite.Sprite):
         self.surf = pygame.image.load("assets/images/mob2.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(center = (x, y))
+        pygame.mixer.ddda(2).play(rev_sound, -1)
         
     def update(self):
         temp_x = rd.randint(-5, 5)
@@ -116,6 +135,7 @@ class Mob(pygame.sprite.Sprite):
             self.game.player.rect.move_ip(0, 50)
             self.game.player.rect.move_ip(50, 0)
             self.game.player.health -= 1
+            pygame.mixer.Channel(1).play(collision_sound)
             print("player mob collision") 
             
         # Keep mobs on the screen
@@ -133,6 +153,7 @@ class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, x1, y1,game):
         super(Bullet, self).__init__()
         self.bullet_img = pygame.image.load('assets/images/arrow.png')
+        self.bullet_img.set_colorkey((255, 255, 255), RLEACCEL)
         self.game = game
         self.x = x  
         self.y = y  
@@ -152,7 +173,10 @@ class Bullet(pygame.sprite.Sprite):
         self.x += self.speed * self.speed_x1
         self.y += self.speed * self.speed_y1
         self.rect.move_ip(0, self.speed_y1*self.speed)
-        self.rect.move_ip(self.speed_x1*self.speed,0)               
+        self.rect.move_ip(self.speed_x1*self.speed,0)   
+        ###pygame.mixer.Channel(3).play(buulet_to_brick_sound) 
+
+
 # Define a player object by extending pygame.sprite.Sprite
 # The surface drawn on the screen is now an attribute of 'player'
 class Player(pygame.sprite.Sprite):
@@ -179,6 +203,7 @@ class Player(pygame.sprite.Sprite):
                 print("He's crashed")
                 self.rect.move_ip(0, 100)
                 self.health -= 1
+                pygame.mixer.Channel(1).play(collision_sound)
         if pressed_keys[K_DOWN] or pressed_keys[K_s]:
             self.rect.move_ip(0, 5)
             if pygame.sprite.spritecollideany(self, self.game.bricks):
@@ -187,6 +212,7 @@ class Player(pygame.sprite.Sprite):
                 print("He's crashed")
                 self.rect.move_ip(0, -100)
                 self.health -= 1
+                pygame.mixer.Channel(1).play(collision_sound)
         if pressed_keys[K_LEFT] or pressed_keys[K_a]:
             self.rect.move_ip(-5, 0)
             if pygame.sprite.spritecollideany(self, self.game.bricks):
@@ -195,6 +221,7 @@ class Player(pygame.sprite.Sprite):
                 print("Game over! He's crashed")
                 self.rect.move_ip(100, 0)
                 self.health -= 1
+                pygame.mixer.Channel(1).play(collision_sound)
         if pressed_keys[K_RIGHT] or pressed_keys[K_d]:
             self.rect.move_ip(5, 0)
             if pygame.sprite.spritecollideany(self, self.game.bricks):
@@ -203,7 +230,9 @@ class Player(pygame.sprite.Sprite):
                 print("Game over! He's crashed")
                 self.rect.move_ip(-100, 0)
                 self.health -= 1
+                pygame.mixer.Channel(1).play(collision_sound)
         if pygame.sprite.groupcollide(self.game.mobs, self.game.bullets, True, True):
+           pygame.mixer.Channel(1).play(rd.choice(damage_sound))
            self.kill()              
            print("bullet killed mob")
         # Keep player on the screen
@@ -225,6 +254,7 @@ class Player(pygame.sprite.Sprite):
     def shoot(self):
         bullet = Bullet(self.rect.x,self.rect.y,self.dir_x,self.dir_y,self.game)
         self.game.bullets.add(bullet)
+        pygame.mixer.Channel(0).play(shoot_sound)
 
 class Map():
     def __init__(self):
@@ -386,13 +416,18 @@ class Game():
 
         self.draw_map()
         self.draw_spawnMobMap()
-        while self.player.health != 0 and self.running: # this cicle defines health of our player
+        while self.player.health > 0 and self.running: # this cicle defines health of our player
             self.clock.tick(self.FPS)  # delay according to fps
 
             for event in pygame.event.get(): # check events
                 if event.type == pygame.KEYDOWN:         # when user hits some button
                     if event.key == pygame.K_ESCAPE:     # Esc -> quit
-                        self.running = False         
+                        self.running = False  
+                    elif event.key == pygame.K_m:     
+                        pygame.mixer.music.pause() 
+                    elif event.key == pygame.K_n:     
+                        pygame.mixer.music.unpause()                                  
+       
                 elif event.type == pygame.MOUSEBUTTONDOWN:         
                     if event.button == 1:
                         self.player.shoot()
