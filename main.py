@@ -119,7 +119,7 @@ class Mob(pygame.sprite.Sprite):
         self.surf = pygame.image.load("assets/images/mob2.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(center = (x, y))
-        pygame.mixer.ddda(2).play(rev_sound, -1)
+        pygame.mixer.Channel(2).play(rev_sound, -1)
         
     def update(self):
         temp_x = rd.randint(-5, 5)
@@ -174,7 +174,9 @@ class Bullet(pygame.sprite.Sprite):
         self.y += self.speed * self.speed_y1
         self.rect.move_ip(0, self.speed_y1*self.speed)
         self.rect.move_ip(self.speed_x1*self.speed,0)   
-        ###pygame.mixer.Channel(3).play(buulet_to_brick_sound) 
+        if pygame.sprite.spritecollideany(self, self.game.bricks):  
+            self.kill()    
+            pygame.mixer.Channel(3).play(buulet_to_brick_sound) 
 
 
 # Define a player object by extending pygame.sprite.Sprite
