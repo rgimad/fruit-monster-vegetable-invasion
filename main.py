@@ -116,7 +116,7 @@ class Mob(pygame.sprite.Sprite):
             self.game.player.rect.move_ip(0, 50)
             self.game.player.rect.move_ip(50, 0)
             self.game.player.health -= 1
-            print("player mob collision")            
+            print("player mob collision") 
             
         # Keep mobs on the screen
         elif self.rect.left < 0:
@@ -130,14 +130,16 @@ class Mob(pygame.sprite.Sprite):
           
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, x1, y1):
+    def __init__(self, x, y, x1, y1,game):
         super(Bullet, self).__init__()
         self.bullet_img = pygame.image.load('assets/images/arrow.png')
+        self.game = game
         self.x = x  
         self.y = y  
         self.speed = 8
         self.speed_x1 = x1
         self.speed_y1 = y1
+        self.rect = self.bullet_img.get_rect(center = (x, y))
         for event in pygame.event.get():
             if event.type == pygame.MOUSEMOTION:
                     self.m_x, self.m_y = event.pos
@@ -149,6 +151,8 @@ class Bullet(pygame.sprite.Sprite):
     def update(self):   
         self.x += self.speed * self.speed_x1
         self.y += self.speed * self.speed_y1
+        self.rect.move_ip(0, self.speed_y1*self.speed)
+        self.rect.move_ip(self.speed_x1*self.speed,0)               
 # Define a player object by extending pygame.sprite.Sprite
 # The surface drawn on the screen is now an attribute of 'player'
 class Player(pygame.sprite.Sprite):
@@ -199,7 +203,9 @@ class Player(pygame.sprite.Sprite):
                 print("Game over! He's crashed")
                 self.rect.move_ip(-100, 0)
                 self.health -= 1
-
+        if pygame.sprite.groupcollide(self.game.mobs, self.game.bullets, True, True):
+           self.kill()              
+           print("bullet killed mob")
         # Keep player on the screen
         if self.rect.left < 0:
             self.rect.left = 0
@@ -217,7 +223,7 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.surf.get_rect(center=self.rect.center)
     
     def shoot(self):
-        bullet = Bullet(self.rect.x,self.rect.y,self.dir_x,self.dir_y)
+        bullet = Bullet(self.rect.x,self.rect.y,self.dir_x,self.dir_y,self.game)
         self.game.bullets.add(bullet)
 
 class Map():
