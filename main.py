@@ -33,6 +33,9 @@ collision_sound = pygame.mixer.Sound('assets/sounds/collision.ogg')
 
 buulet_to_brick_sound = pygame.mixer.Sound('assets/sounds/bullet_to_brick.ogg')
 
+notshoot_sound = pygame.mixer.Sound('assets/sounds/notshoot.ogg')
+reload_sound = pygame.mixer.Sound('assets/sounds/reload.ogg')
+
 
 from pygame.locals import (
     RLEACCEL,
@@ -195,7 +198,7 @@ class Player(pygame.sprite.Sprite):
         self.surf = pygame.image.load("assets/images/player2.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         # create rect from surface and set initial coords
-        self.rect = self.surf.get_rect(center = (self.game.SCREEN_WIDTH / 2, self.game.SCREEN_HEIGHT / 2))
+        self.rect = self.surf.get_rect(center = (self.game.SCREEN_WIDTH / 2, (self.game.SCREEN_HEIGHT / 2)+20))
         self.dir_x = 0
         self.dir_y = 1
         self.health = 3
@@ -259,11 +262,13 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.surf.get_rect(center=self.rect.center)
     
     def shoot(self):
-             if self.bullets_num >= 1:
+            if self.bullets_num >= 1:
                 self.bullets_num -= 1
-                bullet = Bullet(self.rect.x,self.rect.y,self.dir_x,self.dir_y,self.game)
+                bullet = Bullet(self.rect.x+15,self.rect.y+15,self.dir_x,self.dir_y,self.game)
                 self.game.bullets.add(bullet)
                 pygame.mixer.Channel(0).play(shoot_sound)
+            else:
+                pygame.mixer.Channel(0).play(notshoot_sound)
 
 class Map():
     def __init__(self):
@@ -322,6 +327,15 @@ class Tree(pygame.sprite.Sprite):
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))        
 
+class Water(pygame.sprite.Sprite):
+    def __init__(self, x, y, block_type):
+        super(Water, self).__init__()
+        if block_type == 'W':
+            self.surf = pygame.image.load("assets/images/water/water3.png") 
+        elif block_type == 'H':
+            self.surf = pygame.image.load("assets/images/water/water4.png")           
+        self.surf.set_colorkey((255, 255, 255), RLEACCEL)
+        self.rect = self.surf.get_rect(topleft = (x, y)) 
 
 class Game():
     def __init__(self):
@@ -403,7 +417,13 @@ class Game():
                     self.bricks.add(tree3) 
                 elif cell == 'X':
                     tree4 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(tree4)                                     
+                    self.bricks.add(tree4)   
+                elif cell == 'W':
+                    water1 = Water(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(water1) 
+                elif cell == 'H':
+                    water2 = Water(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(water2)                                     
                 else:
                     print('map error: incorrect cell type')
     
@@ -418,7 +438,7 @@ class Game():
                     
 
     def main(self):
-        pygame.mixer.music.load('assets/music/1_level.mp3')
+        pygame.mixer.music.load('assets/music/2_level.mp3')
         pygame.mixer.music.play(loops=-1)
         self.running = True # flag that show is game running or not
         pygame.event.set_grab(True)
@@ -438,7 +458,9 @@ class Game():
                         pygame.mixer.music.unpause()     
                     elif event.key == pygame.K_r:
                         if self.player.bullets_num <= 5:
-                            self.player.bullets_num = 15                                                        
+                            self.player.bullets_num = 15
+                            pygame.mixer.Channel(0).play(reload_sound)
+
        
                 elif event.type == pygame.MOUSEBUTTONDOWN:         
                     if event.button == 1:
