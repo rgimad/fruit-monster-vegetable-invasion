@@ -50,6 +50,7 @@ from pygame.locals import (
     K_SPACE,
     K_m,
     K_n,
+    K_r,
 )
 
 class Menu:
@@ -177,6 +178,10 @@ class Bullet(pygame.sprite.Sprite):
         if pygame.sprite.spritecollideany(self, self.game.bricks):  
             self.kill()    
             pygame.mixer.Channel(3).play(buulet_to_brick_sound) 
+        if pygame.sprite.groupcollide(self.game.mobs, self.game.bullets, True, True):
+           pygame.mixer.Channel(1).play(rd.choice(damage_sound))
+           self.kill()              
+           print("bullet killed mob")            
 
 
 # Define a player object by extending pygame.sprite.Sprite
@@ -194,7 +199,7 @@ class Player(pygame.sprite.Sprite):
         self.dir_x = 0
         self.dir_y = 1
         self.health = 3
-
+        self.bullets_num = 15
     # Move the sprite based on user keypresses
     def update(self, pressed_keys):
         if pressed_keys[K_UP] or pressed_keys[K_w]:
@@ -254,9 +259,11 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.surf.get_rect(center=self.rect.center)
     
     def shoot(self):
-        bullet = Bullet(self.rect.x,self.rect.y,self.dir_x,self.dir_y,self.game)
-        self.game.bullets.add(bullet)
-        pygame.mixer.Channel(0).play(shoot_sound)
+             if self.bullets_num >= 1:
+                self.bullets_num -= 1
+                bullet = Bullet(self.rect.x,self.rect.y,self.dir_x,self.dir_y,self.game)
+                self.game.bullets.add(bullet)
+                pygame.mixer.Channel(0).play(shoot_sound)
 
 class Map():
     def __init__(self):
@@ -428,7 +435,10 @@ class Game():
                     elif event.key == pygame.K_m:     
                         pygame.mixer.music.pause() 
                     elif event.key == pygame.K_n:     
-                        pygame.mixer.music.unpause()                                  
+                        pygame.mixer.music.unpause()     
+                    elif event.key == pygame.K_r:
+                        if self.player.bullets_num <= 5:
+                            self.player.bullets_num = 15                                                        
        
                 elif event.type == pygame.MOUSEBUTTONDOWN:         
                     if event.button == 1:
@@ -472,14 +482,13 @@ class Game():
                 if entity.x <= SCREEN_WIDTH:
                     screen.blit(entity.bullet_img, (entity.x, entity.y))
 
-            pygame.draw.line(self.screen, (0, 30, 225), 
-                    [self.player.rect.x + 36, self.player.rect.y + 38], 
-                    [self.player.rect.x + 300*self.player.dir_x, self.player.rect.y + 300*self.player.dir_y], 2)
+            #pygame.draw.line(self.screen, (0, 30, 225), 
+            #        [self.player.rect.x + 36, self.player.rect.y + 38], 
+            #        [self.player.rect.x + 300*self.player.dir_x, self.player.rect.y + 300*self.player.dir_y], 2)
 
             # Draw fps ounter
-            fps = self.font.render('FPS: ' + str(int(self.clock.get_fps())) + '     ' + str(self.player.health) + '    Health', True, pygame.Color('white'))
+            fps = self.font.render('FPS: ' + str(int(self.clock.get_fps())) + '   Health :  ' + str(self.player.health)  + '  Bullets : '+ str(self.player.bullets_num), True, pygame.Color('white'))
             self.screen.blit(fps, (50, 30))
-
             # Update the display
             pygame.display.flip()
         # check status of player's health 
