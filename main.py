@@ -19,19 +19,19 @@ consty = SCREEN_HEIGHT / 768
 # intro.preview()
 
 pygame.init()
-shoot_sound = pygame.mixer.Sound('assets/sounds/shoot3.mp3')
+shoot_sound = pygame.mixer.Sound('assets/sounds/shoot3.ogg')
 shoot_sound.set_volume(0.1)
 
 damage_sound = []
-for snd in ['assets/sounds/damage1.mp3', 'assets/sounds/damage2.mp3']:
+for snd in ['assets/sounds/damage1.ogg', 'assets/sounds/damage2.ogg']:
     damage_sound.append(pygame.mixer.Sound(snd))
 
-rev_sound = pygame.mixer.Sound('assets/sounds/rev.mp3')
+rev_sound = pygame.mixer.Sound('assets/sounds/rev.ogg')
 rev_sound.set_volume(1.5)
 
-collision_sound = pygame.mixer.Sound('assets/sounds/collision.mp3')
+collision_sound = pygame.mixer.Sound('assets/sounds/collision.ogg')
 
-buulet_to_brick_sound = pygame.mixer.Sound('assets/sounds/bullet_to_brick.mp3')
+buulet_to_brick_sound = pygame.mixer.Sound('assets/sounds/bullet_to_brick.ogg')
 
 
 from pygame.locals import (
