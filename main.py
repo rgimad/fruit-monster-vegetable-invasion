@@ -231,14 +231,11 @@ class Camera():
 
         new_x, new_y = self.x + dx, self.y + dy
 
-        #print(new_x - self.area_width // 2)
-
         if new_x - self.area_width // 2 >= 10 and new_x + self.area_width // 2 <= game_map.cols*game_map.cell_size:
             self.x = new_x
 
         if new_y - self.area_height // 2 >= 0 and new_y + self.area_height // 2 <= game_map.rows*game_map.cell_size:
             self.y = new_y
-
 
     #def is_inside(self, obj_x, obj_y):
     #    return abs(obj_x - self.x)*2 < self.area_width and abs(obj_y - self.y)*2 < self.area_height
@@ -257,16 +254,12 @@ class Map():
         self.matrix = f.read().split('\n')
         self.rows = len(self.matrix)
         self.cols = len(self.matrix[0])
-        #print('))', self.matrix[self.rows - 1], '))')
         if self.matrix[self.rows - 1] != self.cols:
             self.rows -= 1
         print('rows = ', self.rows, 'cols = ', self.cols)
 
     def cell(self, row, col):
-        #try:
-        return self.matrix[row][col]  
-        #except:
-        #    print('row = ', row, 'col = ', col)      
+        return self.matrix[row][col]     
 
 
 class Brick(pygame.sprite.Sprite):
@@ -337,10 +330,6 @@ class Game():
         #self.all_sprites = pygame.sprite.Group()
         #self.all_sprites.add(self.player)
 
-        #cam_aw = (self.SCREEN_WIDTH // self.map.cell_size)*self.map.cell_size + 1
-        #cam_ah = (self.SCREEN_HEIGHT // self.map.cell_size)*self.map.cell_size + 1
-        #cam_aw = cam_aw * 7 // 10
-        #cam_ah = cam_ah * 7 // 10
         cam_x, cam_y = self.player.rect.x, self.player.rect.y
         self.camera = Camera(cam_x, cam_y)
 
@@ -456,22 +445,10 @@ class Game():
 
             #self.screen.fill((0, 0, 0))
             
-            """
-            for entity in self.terrain_blocks:
-                self.screen.blit(entity.surf, entity.rect)
-
-            for entity in self.bricks:
-                self.screen.blit(entity.surf, entity.rect)
-            # Draw mobs on the screen
-            for entity in self.mobs:
-                self.screen.blit(entity.surf, entity.rect)
-            """
-
+            # all object are rendered according to camera position and center of the screen
+            # render blocks, bricks and mobs
             for entity in itertools.chain(self.terrain_blocks, self.bricks, self.mobs):
-                if True: #self.camera.is_inside(entity.rect.x, entity.rect.y):
-                    #print(entity.rect.x, entity.rect.x - self.camera.x + SCREEN_WIDTH//2)
-                    #print(entity.rect.y, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2)
-                    self.screen.blit(entity.surf, (entity.rect.x - self.camera.x + SCREEN_WIDTH//2, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2))
+                self.screen.blit(entity.surf, (entity.rect.x - self.camera.x + SCREEN_WIDTH//2, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2))
 
             # Draw the player on the screen
             self.screen.blit(self.player.surf, (self.player.rect.x - self.camera.x + SCREEN_WIDTH//2, self.player.rect.y - self.camera.y + SCREEN_HEIGHT//2))  #self.screen.blit(self.player.surf, self.player.rect)
