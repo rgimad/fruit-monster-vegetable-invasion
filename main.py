@@ -5,6 +5,8 @@ import pygame
 import random as rd
 import PIL
 from PIL import Image
+import threading
+import time
 
 window = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
@@ -203,6 +205,7 @@ class Player(pygame.sprite.Sprite):
         self.dir_y = 1
         self.health = 3
         self.bullets_num = 15
+        self.state = 'WAIT'
     # Move the sprite based on user keypresses
     def update(self, pressed_keys):
         if pressed_keys[K_UP] or pressed_keys[K_w]:
@@ -262,6 +265,8 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.surf.get_rect(center=self.rect.center)
     
     def shoot(self):
+            if self.state == 'RELOADING':
+                return
             if self.bullets_num >= 1:
                 self.bullets_num -= 1
                 bullet = Bullet(self.rect.x+15,self.rect.y+15,self.dir_x,self.dir_y,self.game)
@@ -269,6 +274,23 @@ class Player(pygame.sprite.Sprite):
                 pygame.mixer.Channel(0).play(shoot_sound)
             else:
                 pygame.mixer.Channel(0).play(notshoot_sound)
+
+    def reload(self):
+
+        def reload_bullets(self):
+            for _ in range(15):
+                if self.bullets_num == 15:
+                    break
+                self.bullets_num = min(15, self.bullets_num + 5)
+                time.sleep(1)
+            self.state = 'WAIT'
+
+        x = threading.Thread(target=reload_bullets, args=(self,))
+
+        if self.state == 'WAIT':
+            self.state = 'RELOADING'
+            x.start()
+            
 
 class Map():
     def __init__(self):
@@ -458,8 +480,8 @@ class Game():
                         pygame.mixer.music.unpause()     
                     elif event.key == pygame.K_r:
                         if self.player.bullets_num <= 5:
-                            self.player.bullets_num = 15
                             pygame.mixer.Channel(0).play(reload_sound)
+                            self.player.reload()
 
        
                 elif event.type == pygame.MOUSEBUTTONDOWN:         
