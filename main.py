@@ -1,12 +1,13 @@
 import sys
 import math
 import pygame
+import threading
+import time
 # from moviepy.editor import VideoFileClip # library to add video in proj
+import LeeMovement as lee
 import random as rd
 import PIL
 from PIL import Image
-import threading
-import time
 
 window = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
@@ -124,14 +125,66 @@ class Mob(pygame.sprite.Sprite):
         self.game = game
         self.surf = pygame.image.load("assets/images/mob2.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
-        self.rect = self.surf.get_rect(center = (x, y))
+        self.rect = self.surf.get_rect(topleft = (x, y))
+        # needs for lee algo
+        self.pos = (math.ceil(x / self.game.map.cell_size), int(y / self.game.map.cell_size))
         pygame.mixer.Channel(2).play(rev_sound, -1)
-        
+        self.i = 1
+        self.j = 1
+        self.field = lee.Field(self.game.map.rows, self.game.map.cols, self.pos, \
+                                self.game.player.pos, self.game.barriers)
+        self.field.emit()
+        self.path = self.field.get_path()
+        self.path.reverse()
+
+    def isCollision(self, mob, bricks):
+        return pygame.sprite.spritecollideany(mob, bricks)
+
     def update(self):
+        # print(self.pos)
+        # print(self.game.player.pos)
+        # print(self.game.barriers)
+        # print(self.path)
+        if self.game.player.init_pos != self.game.player.pos:
+            self.field = lee.Field(self.game.map.rows, self.game.map.cols, self.pos, \
+                                self.game.player.pos, self.game.barriers)
+            self.field.emit()
+            self.path = self.field.get_path()
+            self.game.player.init_pos = self.game.player.pos
+            self.path.reverse()
+            self.i = 1
+            self.j = 0
+        elif self.j <= self.game.map.cell_size: #len(self.path) > 1 and self.i < len(self.path):
+            self.rect.move_ip((self.path[self.i][0] - self.pos[0]) * 3, 0) #* self.game.map.cell_size, 0)
+            self.rect.move_ip(0, (self.path[self.i][1] - self.pos[1]) * 3) #* self.game.map.cell_size)
+            # print(self.j, 'lol')
+            self.j += 3
+            # print(self.i, 'lol')
+            # time.sleep(0.2)
+            # self.pos = self.path[self.i]
+            # self.i += 1
+        elif self.i <= len(self.path):
+            print(self.i, "lol")
+            self.i += 1
+            self.j = 0
+            self.pos = self.path[self.i - 1]
+            # self.pos = self.path[0]
         temp_x = rd.randint(-5, 5)
         temp_y = rd.randint(-5, 5)
-        self.rect.move_ip(0, temp_x)
-        self.rect.move_ip(temp_y, 0)
+        # if self.j < self.game.map.cell_size:
+        #     self.rect.move_ip((path[self.i][0] - start[0]), 0)
+        #     self.rect.move_ip(0, (path[self.i][1] - start[1]))
+        #     self.j += 1
+        # elif self.i < len(path) - 1:
+        #     self.j = 1
+        #     self.i += 1
+        #     self.pos = path[self.i]
+        # else:
+        #     temp_x = rd.randint(-5, 5)
+        #     temp_y = rd.randint(-5, 5)
+        # self.rect.move_ip(0, temp_x)
+        # self.rect.move_ip(temp_y, 0)
+
         if pygame.sprite.spritecollideany(self, self.game.bricks):
             self.rect.move_ip(0, -temp_x)
             self.rect.move_ip(-temp_y, 0)
@@ -192,7 +245,7 @@ class Bullet(pygame.sprite.Sprite):
 # Define a player object by extending pygame.sprite.Sprite
 # The surface drawn on the screen is now an attribute of 'player'
 class Player(pygame.sprite.Sprite):
-    def __init__(self, game):
+    def __init__(self, x, y, game):
         super(Player, self).__init__()
         self.game = game # reference to Game object in which player is playing
         #self.surf = pygame.Surface((75, 75))
@@ -200,48 +253,70 @@ class Player(pygame.sprite.Sprite):
         self.surf = pygame.image.load("assets/images/player2.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         # create rect from surface and set initial coords
-        self.rect = self.surf.get_rect(center = (self.game.SCREEN_WIDTH / 2, (self.game.SCREEN_HEIGHT / 2)+20))
+        #self.rect = self.surf.get_rect(center = (self.game.SCREEN_WIDTH / 2, self.game.SCREEN_HEIGHT / 2))
+        self.rect = self.surf.get_rect(center = (x, y))
+        # needs for lee algo
+        self.pos = (int(x / self.game.map.cell_size), int(y / self.game.map.cell_size))
+        self.init_pos = self.pos
         self.dir_x = 0
         self.dir_y = 1
         self.health = 3
         self.bullets_num = 15
-        self.state = 'WAIT'
+        
+    def isCollision(self, game):
+        return pygame.sprite.spritecollideany(self, game)
+
+    def getPosition(self):
+        return (math.ceil(self.rect.x / self.game.map.cell_size), \
+                math.ceil(self.rect.y / self.game.map.cell_size))
     # Move the sprite based on user keypresses
     def update(self, pressed_keys):
         if pressed_keys[K_UP] or pressed_keys[K_w]:
             self.rect.move_ip(0, -5)
+            self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(0, 5)
+                self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.mobs):
                 print("He's crashed")
                 self.rect.move_ip(0, 100)
+                self.pos = self.getPosition()
                 self.health -= 1
                 pygame.mixer.Channel(1).play(collision_sound)
         if pressed_keys[K_DOWN] or pressed_keys[K_s]:
             self.rect.move_ip(0, 5)
+            self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(0, -5)
+                self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.mobs):
                 print("He's crashed")
                 self.rect.move_ip(0, -100)
+                self.pos = self.getPosition()
                 self.health -= 1
                 pygame.mixer.Channel(1).play(collision_sound)
         if pressed_keys[K_LEFT] or pressed_keys[K_a]:
             self.rect.move_ip(-5, 0)
+            self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(5, 0)
+                self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.mobs):
                 print("Game over! He's crashed")
                 self.rect.move_ip(100, 0)
+                self.pos = self.getPosition()
                 self.health -= 1
                 pygame.mixer.Channel(1).play(collision_sound)
         if pressed_keys[K_RIGHT] or pressed_keys[K_d]:
             self.rect.move_ip(5, 0)
+            self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(-5, 0)
+                self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.mobs):
                 print("Game over! He's crashed")
                 self.rect.move_ip(-100, 0)
+                self.pos = self.getPosition()
                 self.health -= 1
                 pygame.mixer.Channel(1).play(collision_sound)
         if pygame.sprite.groupcollide(self.game.mobs, self.game.bullets, True, True):
@@ -265,15 +340,15 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.surf.get_rect(center=self.rect.center)
     
     def shoot(self):
-            if self.state == 'RELOADING':
-                return
-            if self.bullets_num >= 1:
-                self.bullets_num -= 1
-                bullet = Bullet(self.rect.x+15,self.rect.y+15,self.dir_x,self.dir_y,self.game)
-                self.game.bullets.add(bullet)
-                pygame.mixer.Channel(0).play(shoot_sound)
-            else:
-                pygame.mixer.Channel(0).play(notshoot_sound)
+        if self.state == 'RELOADING':
+            return
+        if self.bullets_num >= 1:
+            self.bullets_num -= 1
+            bullet = Bullet(self.rect.x + 15, self.rect.y + 15, self.dir_x, self.dir_y, self.game)
+            self.game.bullets.add(bullet)
+            pygame.mixer.Channel(0).play(shoot_sound)
+        else:
+            pygame.mixer.Channel(0).play(notshoot_sound)
 
     def reload(self):
 
@@ -300,7 +375,7 @@ class Map():
         self.matrix = None
         self.cell_size = 72
 
-    def load_from(self, filepath = 'assets/maps/map2.txt'):
+    def load_from(self, filepath = 'assets/maps/map3.txt'):
         self.path = filepath
         f = open(filepath)
         self.matrix = f.read().split('\n')
@@ -309,7 +384,6 @@ class Map():
 
     def cell(self, row, col):
         return self.matrix[row][col]        
-
 
 class Brick(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -364,22 +438,16 @@ class Game():
         surface = pygame.display.get_surface()
         self.SCREEN_WIDTH, self.SCREEN_HEIGHT = size = surface.get_width(), surface.get_height()
         self.FPS = 60
+        self.barriers = []
         self.map = Map()
-        self.map.load_from('assets/maps/map2.txt')
-        self.mapSpawn = Map()
-        self.mapSpawn.load_from('assets/maps/spawnMobMap2.txt')
+        self.map.load_from('assets/maps/map3.txt')
         self.running = False
         
         pygame.init()
-
-        #info_object = pygame.display.Info()
-        #self.SCREEN_WIDTH, self.SCREEN_HEIGHT = info_object.current_w, info_object.current_h
         
-        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT)) #, flags = pygame.FULLSCREEN )
+        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(None, 30)
-         # Create a player - Sprite
-        self.player = Player(self)
          # Create a set of mobs - Sprite
         self.mobs = pygame.sprite.Group()
         self.bullets = pygame.sprite.Group()
@@ -395,27 +463,34 @@ class Game():
                 if cell == '#':
                     new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size)
                     self.bricks.add(new_brick)
+                    self.barriers.append((i, j))
                 elif cell == '.':
                     new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
                     self.terrain_blocks.add(new_terrain_block)
                 elif cell == '1':
                     house1 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.bricks.add(house1)
+                    self.barriers.append((i, j))
                 elif cell == '2':
                     house2 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.bricks.add(house2)    
+                    self.barriers.append((i, j))
                 elif cell == '3':
                     house3 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(house3)             
+                    self.bricks.add(house3)  
+                    self.barriers.append((i, j))       
                 elif cell == '4':
                     house4 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(house4)                 
+                    self.bricks.add(house4)     
+                    self.barriers.append((i, j))           
                 elif cell == '5':
                     house5 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.bricks.add(house5)  
+                    self.barriers.append((i, j))
                 elif cell == '6':
                     house6 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.bricks.add(house6)  
+                    self.barriers.append((i, j))
                 elif cell == '7':
                     most1 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.terrain_blocks.add(most1)  
@@ -431,33 +506,39 @@ class Game():
                 elif cell == 'T':
                     tree1 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.bricks.add(tree1) 
+                    self.barriers.append((i, j))
                 elif cell == 'O':
                     tree2 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.bricks.add(tree2) 
+                    self.barriers.append((i, j))
                 elif cell == 'A':
                     tree3 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.bricks.add(tree3) 
+                    self.barriers.append((i, j))
                 elif cell == 'X':
                     tree4 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(tree4)   
+                    self.bricks.add(tree4) 
+                    self.barriers.append((i, j))     
                 elif cell == 'W':
                     water1 = Water(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(water1) 
+                    self.bricks.add(water1)
+                    self.barriers.append((i, j))     
                 elif cell == 'H':
                     water2 = Water(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(water2)                                     
-                else:
-                    print('map error: incorrect cell type')
-    
-    def draw_spawnMobMap(self):
-        for i in range(self.mapSpawn.rows):
-            for j in range(self.mapSpawn.cols):
-                cell = self.mapSpawn.cell(i, j)
-                if cell == '@':
-                    new_mob = Mob(j*self.mapSpawn.cell_size, i*self.mapSpawn.cell_size, self)
+                    self.bricks.add(water2)  
+                    self.barriers.append((i, j))             
+                elif cell == '!':
+                    # Create a player - Sprite
+                    self.player = Player(j*self.map.cell_size, i*self.map.cell_size, self)
+                    new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
+                    self.terrain_blocks.add(new_terrain_block)
+                elif cell == '@':
+                    new_mob = Mob(j*self.map.cell_size, i*self.map.cell_size, self)
                     self.mobs.add(new_mob)
-                    #self.all_sprites.add(new_mob)
-                    
+                    new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
+                    self.terrain_blocks.add(new_terrain_block)                            
+                else:
+                    print('map error: incorrect cell type')                  
 
     def main(self):
         pygame.mixer.music.load('assets/music/2_level.mp3')
@@ -466,11 +547,10 @@ class Game():
         pygame.event.set_grab(True)
 
         self.draw_map()
-        self.draw_spawnMobMap()
-        while self.player.health > 0 and self.running: # this cicle defines health of our player
-            self.clock.tick(self.FPS)  # delay according to fps
+        while self.player.health > 0 and self.running:   # this cicle defines health of our player
+            self.clock.tick(self.FPS)                    # delay according to fps
 
-            for event in pygame.event.get(): # check events
+            for event in pygame.event.get():             # check events
                 if event.type == pygame.KEYDOWN:         # when user hits some button
                     if event.key == pygame.K_ESCAPE:     # Esc -> quit
                         self.running = False  
@@ -495,9 +575,6 @@ class Game():
                         self.player.dir_y = (m_y - self.player.rect.y) / l
                 elif event.type == pygame.QUIT:   # if user closes the widow -> quit
                     self.running = False
-
-                #else:
-                #    print(event.type, pygame.mouse.get_pos())
 
             # Get all the keys currently pressed
             pressed_keys = pygame.key.get_pressed()
@@ -525,7 +602,8 @@ class Game():
             for entity in self.bullets:
                 if entity.x <= SCREEN_WIDTH:
                     screen.blit(entity.bullet_img, (entity.x, entity.y))
-
+            
+            # Draw the laser
             #pygame.draw.line(self.screen, (0, 30, 225), 
             #        [self.player.rect.x + 36, self.player.rect.y + 38], 
             #        [self.player.rect.x + 300*self.player.dir_x, self.player.rect.y + 300*self.player.dir_y], 2)
