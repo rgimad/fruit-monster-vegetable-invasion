@@ -262,6 +262,7 @@ class Player(pygame.sprite.Sprite):
         self.dir_y = 1
         self.health = 3
         self.bullets_num = 15
+        self.state = 'WAIT'
         
     def isCollision(self, game):
         return pygame.sprite.spritecollideany(self, game)
