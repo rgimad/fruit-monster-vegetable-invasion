@@ -49,9 +49,9 @@ class Field(object):
                 q.put(d)
 
     def get_path(self):
-        if self[self.finish[0]][self.finish[1]] == 0 or \
-                self[self.finish[0]][self.finish[1]] == -1:
-            raise print("!")
+        # if self[self.finish[0]][self.finish[1]] == 0 or \
+        #         self[self.finish[0]][self.finish[1]] == -1:
+        #     raise print("!")
 
         path = []
         item = self.finish

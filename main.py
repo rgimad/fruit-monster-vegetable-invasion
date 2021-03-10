@@ -61,23 +61,54 @@ from pygame.locals import (
 
 class Menu:
     def __init__(self):
+        self.menu_point = None
+        self.first = True
+        self.change_level = False
+        self.block_lvl = False
+        self.constPixel = 0
+        self.level = pygame.image.load('assets/images/level1.png').convert()
+        self.block_level = pygame.image.load('assets/images/block_level1.png').convert()
         self.punkts = [
             (1000*constx, 520*consty, u'Играть', (250, 97, 3), (255, 165, 0), 0),
-            (1000*constx, 610*consty, u'Выбор персонажа', (250, 97, 3), (255, 165, 0), 1),
+            (1000*constx, 610*consty, u'Выбрать персонажа', (250, 97, 3), (255, 165, 0), 1),
             (1000*constx, 700*consty, u'Выйти', (250, 97, 3), (255, 165, 0),  2)
         ]
+        self.punkts_after_play = [
+            (1000*constx, 520*consty, u'Новая игра', (250, 97, 3), (255, 165, 0), 0),
+            (1000*constx, 610*consty, u'Выбрать уровень', (250, 97, 3), (255, 165, 0), 1),
+            (1000*constx, 700*consty, u'Назад', (250, 97, 3), (255, 165, 0),  2)
+        ]
+        self.backInChoiceLvl = [(1000*constx, 700*consty, u'Назад', (250, 97, 3), (255, 165, 0),  2)]
 
-    def render(self, screen, font, num_punkt):
-        for i in self.punkts:
+    def render(self, screen, font, points, num_punkt):
+        for i in points:
             if num_punkt == i[5]:
                 screen.blit(font.render(i[2], 2, i[4]), (i[0], i[1]))
             else:
                 screen.blit(font.render(i[2], 2, i[3]), (i[0], i[1]))
 
+    def get_menu_point(self, mp, points):
+        for i in points:
+            if mp[0]>=i[0] and mp[0]<i[0]+130 and mp[1]>=i[1]-180*consty and mp[1]<i[1]-155*consty:
+                self.menu_point = 0
+            elif  mp[0]>=i[0] and mp[0]<i[0]+330 and mp[1]>=i[1]-83*consty and mp[1]<i[1]-70*consty:
+                self.menu_point = 1  
+            elif mp[0]>=i[0] and mp[0]<i[0]+110 and mp[1]>=i[1] and mp[1]<i[1]+100*consty:
+                self.menu_point = 2   
+            else:
+                self.menu_point = None
+
+    def draw_lvl(self):
+        while self.constPixel < 5:
+            screen.blit(self.level, (180 + 60 * self.constPixel, 400)) if not self.block_lvl else \
+                screen.blit(self.block_level, (180 + 60 * (self.constPixel + 1), 400))
+            self.block_lvl = True
+            self.constPixel += 1
+            
     def menu(self):
-        done = True
-        self.menu_back = pygame.image.load('assets/images/background1.png')
-        img = Image.open( 'assets/images/background1.png')
+        done = False
+        self.menu_back = pygame.image.load('assets/images/background2.png')
+        img = Image.open('assets/images/background2.png')
         img = img.resize((SCREEN_WIDTH, SCREEN_HEIGHT), PIL.Image.ANTIALIAS)
         img.save('assets/images/backgroundResize.png')
         self.menu_back = pygame.image.load('assets/images/backgroundResize.png')
@@ -89,34 +120,54 @@ class Menu:
         font_menu = pygame.font.Font(None, 50)
         pygame.key.set_repeat(0,0)
         pygame.mouse.set_visible(True)
-        punkt = None
-        while done:
+        while not done:
             screen.blit(self.menu_back, (0, 0))
             mp = pygame.mouse.get_pos()
-            self.render(screen, font_menu, punkt)
-            
-            for i in self.punkts:
-                if mp[0]>=i[0] and mp[0]<i[0]+130 and mp[1]>=i[1]-180*consty and mp[1]<i[1]-155*consty:
-                    punkt = 0
-                elif  mp[0]>=i[0] and mp[0]<i[0]+330 and mp[1]>=i[1]-83*consty and mp[1]<i[1]-70*consty:
-                    punkt = 1  
-                elif mp[0]>=i[0] and mp[0]<i[0]+110 and mp[1]>=i[1] and mp[1]<i[1]+100*consty:
-                    punkt = 2   
-                else :
-                    punkt = None
+            if not self.change_level:
+                if self.first:
+                    self.render(screen, font_menu, self.punkts, self.menu_point)
+                    self.get_menu_point(mp, self.punkts)
+                else:
+                    self.render(screen, font_menu, self.punkts_after_play, self.menu_point)
+                    self.get_menu_point(mp, self.punkts_after_play)
+            else:
+                screen.blit(self.level, (150, 400))
+                [screen.blit(self.block_level, (180 + 330 * (self.constPixel + 1), 400)) for self.constPixel in range(4)]
+                self.render(screen, font_menu, self.backInChoiceLvl, self.menu_point)
+                self.get_menu_point(mp, self.punkts_after_play)
+
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     sys.exit()
                 if e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_ESCAPE:
-                       sys.exit()
+                        sys.exit()
                 if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 :
-                         if punkt == 0:
-                             self.game = Game()
-                             self.game.main()  
-                         elif punkt == 2:
-                               exit()
-     
+                    if self.menu_point == 0:
+                        if not self.first:
+                            self.game = Game()
+                            self.game.main()  
+                        else:
+                            self.first = False
+                            self.menu_point = None
+                    elif self.menu_point == 1:
+                        if not self.first:
+                            self.change_level = True
+                            self.menu_back = pygame.image.load('assets/images/back_lvl.png')
+                            img = Image.open('assets/images/back_lvl.png')
+                            img = img.resize((SCREEN_WIDTH, SCREEN_HEIGHT), PIL.Image.ANTIALIAS)
+                            img.save('assets/images/back_lvl_resize.png')
+                            self.menu_back = pygame.image.load('assets/images/back_lvl_resize.png')
+                        else:
+                            exit()
+                    elif self.menu_point == 2:
+                        if self.first:
+                            exit()
+                        elif not self.first and not self.change_level:
+                            self.first = True
+                        elif not self.first and self.change_level:
+                            self.change_level = False
+                            self.menu_back = pygame.image.load('assets/images/backgroundResize.png')
             pygame.display.flip()
 
 class Mob(pygame.sprite.Sprite):
@@ -145,6 +196,7 @@ class Mob(pygame.sprite.Sprite):
         # print(self.game.player.pos)
         # print(self.game.barriers)
         # print(self.path)
+        # print(self.game.player.init_pos, self.game.player.pos)
         if self.game.player.init_pos != self.game.player.pos:
             self.field = lee.Field(self.game.map.rows, self.game.map.cols, self.pos, \
                                 self.game.player.pos, self.game.barriers)
@@ -256,7 +308,7 @@ class Player(pygame.sprite.Sprite):
         #self.rect = self.surf.get_rect(center = (self.game.SCREEN_WIDTH / 2, self.game.SCREEN_HEIGHT / 2))
         self.rect = self.surf.get_rect(center = (x, y))
         # needs for lee algo
-        self.pos = (int(x / self.game.map.cell_size), int(y / self.game.map.cell_size))
+        self.pos = (math.ceil(x / self.game.map.cell_size), math.ceil(y / self.game.map.cell_size))
         self.init_pos = self.pos
         self.dir_x = 0
         self.dir_y = 1
@@ -367,7 +419,6 @@ class Player(pygame.sprite.Sprite):
             self.state = 'RELOADING'
             x.start()
             
-
 class Map():
     def __init__(self):
         self.rows = None
@@ -387,9 +438,12 @@ class Map():
         return self.matrix[row][col]        
 
 class Brick(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, block_type):
         super(Brick, self).__init__()
-        self.surf = pygame.image.load("assets/images/brick1.png").convert()
+        if block_type == '$':
+            self.surf = pygame.image.load("assets/images/stone1.png").convert()
+        elif block_type == '#':
+            self.surf = pygame.image.load("assets/images/brick2.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
 
@@ -434,6 +488,30 @@ class Water(pygame.sprite.Sprite):
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y)) 
 
+class Portal(pygame.sprite.Sprite):
+    def __init__(self, x, y, block_type = 1):
+        super(Portal, self).__init__()
+        self.surf = pygame.image.load("assets/images/portal1.png").convert()
+        self.surf.set_colorkey((255, 255, 255), RLEACCEL)
+        self.rect = self.surf.get_rect(topleft = (x, y))
+
+class Door(pygame.sprite.Sprite):
+    def __init__(self, x, y, block_type):
+        super(Door, self).__init__()
+        self.surf = pygame.image.load("assets/images/closed_door.png").convert()
+        self.surf.set_colorkey((255, 255, 255), RLEACCEL)
+        self.rect = self.surf.get_rect(topleft = (x, y))
+
+class Open_door(pygame.sprite.Sprite):
+    def __init__(self, x, y, block_type):
+        super(Open_door, self).__init__()
+        if block_type == 'D':
+            self.surf = pygame.image.load("assets/images/open_door1.png").convert()
+        elif block_type == 'd':
+            self.surf = pygame.image.load("assets/images/open_door2.png").convert()
+        self.surf.set_colorkey((255, 255, 255), RLEACCEL)
+        self.rect = self.surf.get_rect(topleft = (x, y))
+
 class Game():
     def __init__(self):
         surface = pygame.display.get_surface()
@@ -462,7 +540,7 @@ class Game():
             for j in range(self.map.cols):
                 cell = self.map.cell(i, j)
                 if cell == '#':
-                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size)
+                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.bricks.add(new_brick)
                     self.barriers.append((i, j))
                 elif cell == '.':
@@ -527,9 +605,17 @@ class Game():
                 elif cell == 'H':
                     water2 = Water(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.bricks.add(water2)  
-                    self.barriers.append((i, j))             
-                elif cell == '!':
-                    # Create a player - Sprite
+                    self.barriers.append((i, j))          
+                elif cell == 'D' or cell == 'd':
+                    door = Door(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(door)
+                    self.barriers.append((i, j))
+                    open_door = Door(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.terrain_blocks.add(open_door)
+                elif cell == 'P':
+                    portal = Portal(j*self.map.cell_size, i*self.map.cell_size)
+                    self.terrain_blocks.add(portal)
+                elif cell == '!': # Create a player - Sprite
                     self.player = Player(j*self.map.cell_size, i*self.map.cell_size, self)
                     new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
                     self.terrain_blocks.add(new_terrain_block)
@@ -563,7 +649,6 @@ class Game():
                         if self.player.bullets_num <= 5:
                             pygame.mixer.Channel(0).play(reload_sound)
                             self.player.reload()
-
        
                 elif event.type == pygame.MOUSEBUTTONDOWN:         
                     if event.button == 1:
