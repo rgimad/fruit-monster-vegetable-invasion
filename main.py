@@ -8,6 +8,8 @@ import LeeMovement as lee
 import random as rd
 import PIL
 from PIL import Image
+import numpy as np
+from random import shuffle
 
 window = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
@@ -100,8 +102,8 @@ class Menu:
 
     def draw_lvl(self):
         while self.constPixel < 5:
-            screen.blit(self.level, (180 + 60 * self.constPixel, 400)) if not self.block_lvl else \
-                screen.blit(self.block_level, (180 + 60 * (self.constPixel + 1), 400))
+            screen.blit(self.level, (constx*(128*constx + 42*constx * self.constPixel), 285*consty)) if not self.block_lvl else \
+                screen.blit(self.block_level, (128*constx + 42*constx * (self.constPixel + 1), 285*consty))
             self.block_lvl = True
             self.constPixel += 1
             
@@ -131,8 +133,8 @@ class Menu:
                     self.render(screen, font_menu, self.punkts_after_play, self.menu_point)
                     self.get_menu_point(mp, self.punkts_after_play)
             else:
-                screen.blit(self.level, (150, 400))
-                [screen.blit(self.block_level, (180 + 330 * (self.constPixel + 1), 400)) for self.constPixel in range(4)]
+                screen.blit(self.level, (107*constx, 285*consty))
+                [screen.blit(self.block_level, (128*constx + 235*constx * (self.constPixel + 1), 285*consty)) for self.constPixel in range(4)]
                 self.render(screen, font_menu, self.backInChoiceLvl, self.menu_point)
                 self.get_menu_point(mp, self.punkts_after_play)
 
@@ -169,6 +171,72 @@ class Menu:
                             self.change_level = False
                             self.menu_back = pygame.image.load('assets/images/backgroundResize.png')
             pygame.display.flip()
+
+class Bonus:
+    def __init__(self,game):
+        self.lvl_text = pygame.image.load('assets/images/bonus/bonus1.png').convert()
+        self.lvl_text.set_colorkey((255, 255, 255), RLEACCEL)
+        self.image1 = pygame.image.load('assets/images/bonus/bonus-1.png').convert()
+        self.image1.set_colorkey((255, 255, 255), RLEACCEL) 
+        self.image2 = pygame.image.load('assets/images/bonus/bonus-2.png').convert()
+        self.image2.set_colorkey((255, 255, 255), RLEACCEL)  
+        self.image3 = pygame.image.load('assets/images/bonus/bonus-3.png').convert()
+        self.image3.set_colorkey((255, 255, 255), RLEACCEL)
+        self.image4 = pygame.image.load('assets/images/bonus/bonus-4.png').convert()
+        self.image4.set_colorkey((255, 255, 255), RLEACCEL)                            
+        self.game= game  
+
+    def main(self,x): 
+        self.x=x
+        font_menu = pygame.font.Font(None, 50)
+        pygame.key.set_repeat(0,0)
+        bonus = None
+        font_menu = pygame.font.Font(None, 50)
+        mp = pygame.mouse.get_pos()
+        self.bonus_vec =[0,0,0]
+        Bonus.bonus_image(self,self.x,self.bonus_vec)
+        print(self.x)
+        screen.blit(self.bonus_vec[0], (120, 200))
+        screen.blit(self.bonus_vec[1], (520, 200))
+        screen.blit(self.bonus_vec[2], (920, 200))
+        screen.blit(self.lvl_text,(370, 110))  
+        self.bonus = None      
+        for e in pygame.event.get(): 
+            if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 :
+                if mp[0]>=135 and mp[0]<425 and mp[1]>227 and mp[1]<552:
+                    self.bonus = self.x[0]     
+                    self.game.player.bullets_num =20        
+                elif  mp[0]>527 and mp[0]<822 and mp[1]>227 and mp[1]<552:
+                    self.bonus = self.x[1] 
+                    self.game.player.bullets_num =20
+                elif mp[0]>952 and mp[0]<1218 and mp[1]>227 and mp[1]<552:
+                    self.bonus = self.x[2]
+                    self.game.player.bullets_num =20
+
+    def bonus_type(self,bonus):
+        bonus = bonus
+        if bonus == 1:
+            self.game.player.health +=1
+        if bonus == 2:
+            self.game.player.bullets_num = 25
+        if bonus == 3:
+            self.game.player.bullet_speed += 2
+        if bonus == 4:
+            self.game.player.player_speed = 7                                     
+
+
+    def bonus_image(self,x,image_bonus):
+        self.x = x
+        for i in range(0,3):
+          if self.x[i] == 1:
+              self.bonus_vec[i] = self.image1
+          if self.x[i] == 2:
+              self.bonus_vec[i] = self.image2
+          if self.x[i] == 3:
+              self.bonus_vec[i] = self.image3
+          if self.x[i] == 4:
+              self.bonus_vec[i] = self.image4                                         
+              
 
 class Mob(pygame.sprite.Sprite):
     def __init__(self, x, y, game):
@@ -261,14 +329,14 @@ class Mob(pygame.sprite.Sprite):
           
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, x1, y1,game):
+    def __init__(self, x, y, x1, y1,speed,game):
         super(Bullet, self).__init__()
         self.bullet_img = pygame.image.load('assets/images/arrow.png')
         self.bullet_img.set_colorkey((255, 255, 255), RLEACCEL)
         self.game = game
         self.x = x  
         self.y = y  
-        self.speed = 8
+        self.speed = speed
         self.speed_x1 = x1
         self.speed_y1 = y1
         self.rect = self.bullet_img.get_rect(center = (x, y))
@@ -313,7 +381,9 @@ class Player(pygame.sprite.Sprite):
         self.dir_x = 0
         self.dir_y = 1
         self.health = 3
+        self.player_speed = 5
         self.bullets_num = 15
+        self.bullet_speed = 8
         self.state = 'WAIT'
         
     def isCollision(self, game):
@@ -325,10 +395,10 @@ class Player(pygame.sprite.Sprite):
     # Move the sprite based on user keypresses
     def update(self, pressed_keys):
         if pressed_keys[K_UP] or pressed_keys[K_w]:
-            self.rect.move_ip(0, -5)
+            self.rect.move_ip(0, -self.player_speed)
             self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.bricks):
-                self.rect.move_ip(0, 5)
+                self.rect.move_ip(0, self.player_speed)
                 self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.mobs):
                 print("He's crashed")
@@ -337,10 +407,10 @@ class Player(pygame.sprite.Sprite):
                 self.health -= 1
                 pygame.mixer.Channel(1).play(collision_sound)
         if pressed_keys[K_DOWN] or pressed_keys[K_s]:
-            self.rect.move_ip(0, 5)
+            self.rect.move_ip(0, self.player_speed)
             self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.bricks):
-                self.rect.move_ip(0, -5)
+                self.rect.move_ip(0, -self.player_speed)
                 self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.mobs):
                 print("He's crashed")
@@ -349,10 +419,10 @@ class Player(pygame.sprite.Sprite):
                 self.health -= 1
                 pygame.mixer.Channel(1).play(collision_sound)
         if pressed_keys[K_LEFT] or pressed_keys[K_a]:
-            self.rect.move_ip(-5, 0)
+            self.rect.move_ip(-self.player_speed, 0)
             self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.bricks):
-                self.rect.move_ip(5, 0)
+                self.rect.move_ip(self.player_speed, 0)
                 self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.mobs):
                 print("Game over! He's crashed")
@@ -361,10 +431,10 @@ class Player(pygame.sprite.Sprite):
                 self.health -= 1
                 pygame.mixer.Channel(1).play(collision_sound)
         if pressed_keys[K_RIGHT] or pressed_keys[K_d]:
-            self.rect.move_ip(5, 0)
+            self.rect.move_ip(self.player_speed, 0)
             self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.bricks):
-                self.rect.move_ip(-5, 0)
+                self.rect.move_ip(-self.player_speed, 0)
                 self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.mobs):
                 print("Game over! He's crashed")
@@ -397,7 +467,7 @@ class Player(pygame.sprite.Sprite):
             return
         if self.bullets_num >= 1:
             self.bullets_num -= 1
-            bullet = Bullet(self.rect.x + 15, self.rect.y + 15, self.dir_x, self.dir_y, self.game)
+            bullet = Bullet(self.rect.x + 15, self.rect.y + 15, self.dir_x, self.dir_y,self.bullet_speed, self.game)
             self.game.bullets.add(bullet)
             pygame.mixer.Channel(0).play(shoot_sound)
         else:
@@ -519,10 +589,15 @@ class Game():
         self.FPS = 60
         self.barriers = []
         self.map = Map()
+        self.bonus = Bonus(self)
         self.map.load_from('assets/maps/map3.txt')
         self.running = False
+        self.numbers = list(range(1, 5))
+        shuffle(self.numbers)
+        self.x=self.numbers[:3]
         
         pygame.init()
+
         
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
@@ -532,6 +607,7 @@ class Game():
         self.bullets = pygame.sprite.Group()
         self.bricks = pygame.sprite.Group()
         self.terrain_blocks = pygame.sprite.Group()
+        
         #self.all_sprites = pygame.sprite.Group()
         #self.all_sprites.add(self.player)
 
@@ -685,6 +761,9 @@ class Game():
             # Draw the player on the screen
             self.screen.blit(self.player.surf, self.player.rect)
             
+            if len(self.mobs.sprites()) == 0:       
+                self.bonus.main(self.x) 
+                self.bonus.bonus_type(self.bonus.bonus)
             for entity in self.bullets:
                 if entity.x <= SCREEN_WIDTH:
                     screen.blit(entity.bullet_img, (entity.x, entity.y))
