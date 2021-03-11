@@ -3,20 +3,20 @@ import math
 import pygame
 import threading
 import time
+import numpy as np
+from random import shuffle
 # from moviepy.editor import VideoFileClip # library to add video in proj
 import LeeMovement as lee
 import random as rd
 import PIL
 from PIL import Image
-import numpy as np
-from random import shuffle
 
 window = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 info_object = pygame.display.Info()
 SCREEN_WIDTH, SCREEN_HEIGHT = info_object.current_w, info_object.current_h
-constx = SCREEN_WIDTH // 1366
-consty = SCREEN_HEIGHT // 768
+constx = SCREEN_WIDTH / 1366
+consty = SCREEN_HEIGHT / 768
 
 # Add intro in game
 # pygame.display.set_caption('Intro')
@@ -69,10 +69,10 @@ class Menu:
         self.block_lvl = False
         self.constPixel = 0
         img = Image.open('assets/images/level1.png')
-        img = img.resize((214*constx, 357*consty), PIL.Image.ANTIALIAS)
+        img = img.resize((math.ceil(214*constx), math.ceil(357*consty)), PIL.Image.ANTIALIAS)
         img.save('assets/images/Resize/Resized_level1.png')
         img = Image.open('assets/images/block_level1.png')
-        img = img.resize((214*constx, 357*consty), PIL.Image.ANTIALIAS)
+        img = img.resize((math.ceil(214*constx), math.ceil(357*consty)), PIL.Image.ANTIALIAS)
         img.save('assets/images/Resize/Resized_block_level1.png')
         self.level = pygame.image.load('assets/images/Resize/Resized_level1.png').convert()
         self.block_level = pygame.image.load('assets/images/Resize/Resized_block_level1.png').convert()
@@ -181,21 +181,22 @@ class Menu:
 class Bonus:
     def __init__(self,game):
         img = Image.open('assets/images/bonus/bonus1.png')
-        img = img.resize((704*constx, 101*consty), PIL.Image.ANTIALIAS)
+        img = img.resize((math.ceil(704*constx), math.ceil(101*consty)), PIL.Image.ANTIALIAS)
         img.save('assets/images/Resize/bonus1_r.png')
         img = Image.open('assets/images/bonus/bonus-1.png')
-        img = img.resize((315*constx, 367*consty), PIL.Image.ANTIALIAS)
+        img = img.resize((math.ceil(315*constx), math.ceil(367*consty)), PIL.Image.ANTIALIAS)
         img.save('assets/images/Resize/bonus-1_r.png')
         img = Image.open('assets/images/bonus/bonus-2.png')
-        img = img.resize((315*constx, 367*consty), PIL.Image.ANTIALIAS)
+        img = img.resize((math.ceil(315*constx), math.ceil(367*consty)), PIL.Image.ANTIALIAS)
         img.save('assets/images/Resize/bonus-2_r.png')
         img = Image.open('assets/images/bonus/bonus-3.png')
-        img = img.resize((315*constx, 367*consty), PIL.Image.ANTIALIAS)
+        img = img.resize((math.ceil(315*constx), math.ceil(367*consty)), PIL.Image.ANTIALIAS)
         img.save('assets/images/Resize/bonus-3_r.png')
         img = Image.open('assets/images/bonus/bonus-4.png')
-        img = img.resize((315*constx, 367*consty), PIL.Image.ANTIALIAS)
+        img = img.resize((math.ceil(315*constx), math.ceil(367*consty)), PIL.Image.ANTIALIAS)
         img.save('assets/images/Resize/bonus-4_r.png')
         self.lvl_text = pygame.image.load('assets/images/Resize/bonus1_r.png').convert()
+
         self.lvl_text.set_colorkey((255, 255, 255), RLEACCEL)
         self.image1 = pygame.image.load('assets/images/Resize/bonus-1_r.png').convert()
         self.image1.set_colorkey((255, 255, 255), RLEACCEL) 
@@ -207,7 +208,7 @@ class Bonus:
         self.image4.set_colorkey((255, 255, 255), RLEACCEL)                            
         self.game= game  
 
-    def main(self,x): 
+    def run(self,x): 
         self.x=x
         font_menu = pygame.font.Font(None, 50)
         pygame.key.set_repeat(0,0)
@@ -216,23 +217,19 @@ class Bonus:
         mp = pygame.mouse.get_pos()
         self.bonus_vec =[0,0,0]
         Bonus.bonus_image(self,self.x,self.bonus_vec)
-        print(self.x)
-        screen.blit(self.bonus_vec[0], (120, 200))
-        screen.blit(self.bonus_vec[1], (520, 200))
-        screen.blit(self.bonus_vec[2], (920, 200))
-        screen.blit(self.lvl_text,(370, 110))  
+        screen.blit(self.bonus_vec[0], (120 * constx, 200 * consty))
+        screen.blit(self.bonus_vec[1], (520 * constx, 200 * consty))
+        screen.blit(self.bonus_vec[2], (920 * constx, 200 * consty))
+        screen.blit(self.lvl_text,(370 * constx, 110 * consty))  
         self.bonus = None      
         for e in pygame.event.get(): 
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 :
-                if mp[0]>=135*constx and mp[0]<425*constx and mp[1]>227*consty and mp[1]<552*consty:
+                if mp[0]>=135 * constx and mp[0]<425 * constx and mp[1]>227 * consty and mp[1]<552 * consty:
                     self.bonus = self.x[0]     
-                    self.game.player.bullets_num =20        
-                elif  mp[0]>527*constx and mp[0]<822*constx and mp[1]>227*consty and mp[1]<552*consty:
+                elif  mp[0]>527 * constx and mp[0]<822 * constx and mp[1]>227 * consty and mp[1]<552 * consty:
                     self.bonus = self.x[1] 
-                    self.game.player.bullets_num =20
-                elif mp[0]>952*constx and mp[0]<1218*constx and mp[1]>227*consty and mp[1]<552*consty:
+                elif mp[0]>952 * constx and mp[0]<1218 * constx and mp[1]>227 * consty and mp[1]<552 * consty:
                     self.bonus = self.x[2]
-                    self.game.player.bullets_num =20
 
     def bonus_type(self,bonus):
         bonus = bonus
@@ -257,7 +254,7 @@ class Bonus:
               self.bonus_vec[i] = self.image3
           if self.x[i] == 4:
               self.bonus_vec[i] = self.image4                                         
-              
+
 
 class Mob(pygame.sprite.Sprite):
     def __init__(self, x, y, game):
@@ -267,11 +264,12 @@ class Mob(pygame.sprite.Sprite):
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
         # needs for lee algo
-        self.pos = (math.ceil(x / self.game.map.cell_size), int(y / self.game.map.cell_size))
+        self.mob_position = (math.ceil(y / self.game.map.cell_size), math.ceil(x / self.game.map.cell_size))
         pygame.mixer.Channel(2).play(rev_sound, -1)
-        self.i = 1
-        self.j = 1
-        self.field = lee.Field(self.game.map.rows, self.game.map.cols, self.pos, \
+        self.path_point = 1
+        self.offset_in_cell = 1
+        self.speed = 3
+        self.field = lee.Field(self.game.map.rows, self.game.map.cols, self.mob_position, \
                                 self.game.player.pos, self.game.barriers)
         self.field.emit()
         self.path = self.field.get_path()
@@ -285,30 +283,31 @@ class Mob(pygame.sprite.Sprite):
         # print(self.game.player.pos)
         # print(self.game.barriers)
         # print(self.path)
+        self.field.show()
         # print(self.game.player.init_pos, self.game.player.pos)
         if self.game.player.init_pos != self.game.player.pos:
-            self.field = lee.Field(self.game.map.rows, self.game.map.cols, self.pos, \
+            self.field = lee.Field(self.game.map.rows, self.game.map.cols, self.mob_position, \
                                 self.game.player.pos, self.game.barriers)
             self.field.emit()
             self.path = self.field.get_path()
             self.game.player.init_pos = self.game.player.pos
             self.path.reverse()
-            self.i = 1
-            self.j = 0
-        elif self.j <= self.game.map.cell_size: #len(self.path) > 1 and self.i < len(self.path):
-            self.rect.move_ip((self.path[self.i][0] - self.pos[0]) * 3, 0) #* self.game.map.cell_size, 0)
-            self.rect.move_ip(0, (self.path[self.i][1] - self.pos[1]) * 3) #* self.game.map.cell_size)
+            self.path_point = 1
+            self.offset_in_cell = 0
+        elif self.offset_in_cell <= self.game.map.cell_size and self.path_point < len(self.path):
+            self.rect.move_ip((self.path[self.path_point][1] - self.mob_position[1]) * self.speed, 0)
+            self.rect.move_ip(0, (self.path[self.path_point][0] - self.mob_position[0]) * self.speed)
             # print(self.j, 'lol')
-            self.j += 3
+            self.offset_in_cell += self.speed
             # print(self.i, 'lol')
             # time.sleep(0.2)
             # self.pos = self.path[self.i]
             # self.i += 1
-        elif self.i <= len(self.path):
-            print(self.i, "lol")
-            self.i += 1
-            self.j = 0
-            self.pos = self.path[self.i - 1]
+        elif self.path_point < len(self.path):
+            # print(self.path_point, "lol")
+            self.path_point += 1
+            self.offset_in_cell = 0
+            self.mob_position = self.path[self.path_point - 1]
             # self.pos = self.path[0]
         temp_x = rd.randint(-5, 5)
         temp_y = rd.randint(-5, 5)
@@ -326,12 +325,12 @@ class Mob(pygame.sprite.Sprite):
         # self.rect.move_ip(0, temp_x)
         # self.rect.move_ip(temp_y, 0)
 
-        if pygame.sprite.spritecollideany(self, self.game.bricks):
-            self.rect.move_ip(0, -temp_x)
-            self.rect.move_ip(-temp_y, 0)
+        # if pygame.sprite.spritecollideany(self, self.game.bricks):
+        #     self.rect.move_ip(0, -temp_x)
+        #     self.rect.move_ip(-temp_y, 0)
         if pygame.sprite.spritecollideany(self.game.player, self.game.mobs):#spritecollide(self, self.game.player, 0):
-            self.rect.move_ip(0, -temp_x)
-            self.rect.move_ip(-temp_y, 0)
+            # self.rect.move_ip(0, -temp_x)
+            # self.rect.move_ip(-temp_y, 0)
             self.game.player.rect.move_ip(0, 50)
             self.game.player.rect.move_ip(50, 0)
             self.game.player.health -= 1
@@ -350,13 +349,13 @@ class Mob(pygame.sprite.Sprite):
           
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, x1, y1,speed,game):
+    def __init__(self, x, y, x1, y1, speed, game):
         super(Bullet, self).__init__()
         self.bullet_img = pygame.image.load('assets/images/arrow.png')
         self.bullet_img.set_colorkey((255, 255, 255), RLEACCEL)
         self.game = game
         self.x = x  
-        self.y = y  
+        self.y = y
         self.speed = speed
         self.speed_x1 = x1
         self.speed_y1 = y1
@@ -395,24 +394,24 @@ class Player(pygame.sprite.Sprite):
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         # create rect from surface and set initial coords
         #self.rect = self.surf.get_rect(center = (self.game.SCREEN_WIDTH / 2, self.game.SCREEN_HEIGHT / 2))
-        self.rect = self.surf.get_rect(center = (x, y))
+        self.rect = self.surf.get_rect(topleft = (x, y))
         # needs for lee algo
-        self.pos = (math.ceil(x / self.game.map.cell_size), math.ceil(y / self.game.map.cell_size))
+        self.pos = (math.ceil(y / self.game.map.cell_size), math.ceil(x / self.game.map.cell_size))
         self.init_pos = self.pos
         self.dir_x = 0
         self.dir_y = 1
         self.health = 3
         self.player_speed = 5
-        self.bullets_num = 15
         self.bullet_speed = 8
+        self.bullets_num = 15
         self.state = 'WAIT'
         
     def isCollision(self, game):
         return pygame.sprite.spritecollideany(self, game)
 
     def getPosition(self):
-        return (math.ceil(self.rect.x / self.game.map.cell_size), \
-                math.ceil(self.rect.y / self.game.map.cell_size))
+        return (math.ceil(self.rect.y / self.game.map.cell_size), \
+                math.ceil(self.rect.x / self.game.map.cell_size))
     # Move the sprite based on user keypresses
     def update(self, pressed_keys):
         if pressed_keys[K_UP] or pressed_keys[K_w]:
@@ -488,7 +487,7 @@ class Player(pygame.sprite.Sprite):
             return
         if self.bullets_num >= 1:
             self.bullets_num -= 1
-            bullet = Bullet(self.rect.x + 15, self.rect.y + 15, self.dir_x, self.dir_y,self.bullet_speed, self.game)
+            bullet = Bullet(self.rect.x + 15, self.rect.y + 15, self.dir_x, self.dir_y, self.bullet_speed, self.game)
             self.game.bullets.add(bullet)
             pygame.mixer.Channel(0).play(shoot_sound)
         else:
@@ -609,17 +608,17 @@ class Game():
         self.SCREEN_WIDTH, self.SCREEN_HEIGHT = size = surface.get_width(), surface.get_height()
         self.FPS = 60
         self.barriers = []
+        self.positionMobs = []
         self.map = Map()
-        self.bonus = Bonus(self)
         self.map.load_from('assets/maps/map3.txt')
         self.running = False
-        self.numbers = list(range(1, 5))
-        shuffle(self.numbers)
-        self.x=self.numbers[:3]
         
         pygame.init()
 
-        
+        self.bonus = Bonus(self)
+        self.numbers = list(range(1, 5))
+        shuffle(self.numbers)
+        self.x=self.numbers[:3]
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(None, 30)
@@ -628,7 +627,6 @@ class Game():
         self.bullets = pygame.sprite.Group()
         self.bricks = pygame.sprite.Group()
         self.terrain_blocks = pygame.sprite.Group()
-        
         #self.all_sprites = pygame.sprite.Group()
         #self.all_sprites.add(self.player)
 
@@ -717,13 +715,14 @@ class Game():
                     new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
                     self.terrain_blocks.add(new_terrain_block)
                 elif cell == '@':
-                    new_mob = Mob(j*self.map.cell_size, i*self.map.cell_size, self)
-                    self.mobs.add(new_mob)
+                    self.positionMobs.append((i, j))
                     new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
                     self.terrain_blocks.add(new_terrain_block)                            
                 else:
                     print('map error: incorrect cell type')                  
-
+        for mobPos in self.positionMobs:
+            new_mob = Mob(mobPos[1]*self.map.cell_size, mobPos[0]*self.map.cell_size, self)
+            self.mobs.add(new_mob)
     def main(self):
         pygame.mixer.music.load('assets/music/2_level.mp3')
         pygame.mixer.music.play(loops=-1)
@@ -781,9 +780,9 @@ class Game():
 
             # Draw the player on the screen
             self.screen.blit(self.player.surf, self.player.rect)
-            
+
             if len(self.mobs.sprites()) == 0:       
-                self.bonus.main(self.x) 
+                self.bonus.run(self.x) 
                 self.bonus.bonus_type(self.bonus.bonus)
             for entity in self.bullets:
                 if entity.x <= SCREEN_WIDTH:
