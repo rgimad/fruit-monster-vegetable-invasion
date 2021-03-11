@@ -15,8 +15,8 @@ window = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 info_object = pygame.display.Info()
 SCREEN_WIDTH, SCREEN_HEIGHT = info_object.current_w, info_object.current_h
-constx = SCREEN_WIDTH / 1366
-consty = SCREEN_HEIGHT / 768
+constx = SCREEN_WIDTH // 1366
+consty = SCREEN_HEIGHT // 768
 
 # Add intro in game
 # pygame.display.set_caption('Intro')
@@ -68,8 +68,14 @@ class Menu:
         self.change_level = False
         self.block_lvl = False
         self.constPixel = 0
-        self.level = pygame.image.load('assets/images/level1.png').convert()
-        self.block_level = pygame.image.load('assets/images/block_level1.png').convert()
+        img = Image.open('assets/images/level1.png')
+        img = img.resize((214*constx, 357*consty), PIL.Image.ANTIALIAS)
+        img.save('assets/images/Rezise/Resized_level1.png')
+        img = Image.open('assets/images/block_level1.png')
+        img = img.resize((214*constx, 357*consty), PIL.Image.ANTIALIAS)
+        img.save('assets/images/Rezise/Resized_block_level1.png')
+        self.level = pygame.image.load('assets/images/Rezise/Resized_level1.png').convert()
+        self.block_level = pygame.image.load('assets/images/Rezise/Resized_block_level1.png').convert()
         self.punkts = [
             (1000*constx, 520*consty, u'Играть', (250, 97, 3), (255, 165, 0), 0),
             (1000*constx, 610*consty, u'Выбрать персонажа', (250, 97, 3), (255, 165, 0), 1),
@@ -112,8 +118,8 @@ class Menu:
         self.menu_back = pygame.image.load('assets/images/background2.png')
         img = Image.open('assets/images/background2.png')
         img = img.resize((SCREEN_WIDTH, SCREEN_HEIGHT), PIL.Image.ANTIALIAS)
-        img.save('assets/images/backgroundResize.png')
-        self.menu_back = pygame.image.load('assets/images/backgroundResize.png')
+        img.save('assets/images/Rezise/backgroundResize.png')
+        self.menu_back = pygame.image.load('assets/images/Rezise/backgroundResize.png')
 
         pygame.init()
         pygame.mixer.music.load('assets/music/menu.mp3')
@@ -158,8 +164,8 @@ class Menu:
                             self.menu_back = pygame.image.load('assets/images/back_lvl.png')
                             img = Image.open('assets/images/back_lvl.png')
                             img = img.resize((SCREEN_WIDTH, SCREEN_HEIGHT), PIL.Image.ANTIALIAS)
-                            img.save('assets/images/back_lvl_resize.png')
-                            self.menu_back = pygame.image.load('assets/images/back_lvl_resize.png')
+                            img.save('assets/images/Rezise/back_lvl_resize.png')
+                            self.menu_back = pygame.image.load('assets/images/Rezise/back_lvl_resize.png')
                         else:
                             exit()
                     elif self.menu_point == 2:
@@ -169,20 +175,35 @@ class Menu:
                             self.first = True
                         elif not self.first and self.change_level:
                             self.change_level = False
-                            self.menu_back = pygame.image.load('assets/images/backgroundResize.png')
+                            self.menu_back = pygame.image.load('assets/images/Rezise/backgroundResize.png')
             pygame.display.flip()
 
 class Bonus:
     def __init__(self,game):
-        self.lvl_text = pygame.image.load('assets/images/bonus/bonus1.png').convert()
+        img = Image.open('assets/images/bonus/bonus1.png')
+        img = img.resize((704*constx, 101*consty), PIL.Image.ANTIALIAS)
+        img.save('assets/images/Rezise/bonus1_r.png')
+        img = Image.open('assets/images/bonus/bonus-1.png')
+        img = img.resize((315*constx, 367*consty), PIL.Image.ANTIALIAS)
+        img.save('assets/images/Rezise/bonus-1_r.png')
+        img = Image.open('assets/images/bonus/bonus-2.png')
+        img = img.resize((315*constx, 367*consty), PIL.Image.ANTIALIAS)
+        img.save('assets/images/Rezise/bonus-2_r.png')
+        img = Image.open('assets/images/bonus/bonus-3.png')
+        img = img.resize((315*constx, 367*consty), PIL.Image.ANTIALIAS)
+        img.save('assets/images/Rezise/bonus-3_r.png')
+        img = Image.open('assets/images/bonus/bonus-4.png')
+        img = img.resize((315*constx, 367*consty), PIL.Image.ANTIALIAS)
+        img.save('assets/images/Rezise/bonus-4_r.png')
+        self.lvl_text = pygame.image.load('assets/images/Rezise/bonus1_r.png').convert()
         self.lvl_text.set_colorkey((255, 255, 255), RLEACCEL)
-        self.image1 = pygame.image.load('assets/images/bonus/bonus-1.png').convert()
+        self.image1 = pygame.image.load('assets/images/Rezise/bonus-1_r.png').convert()
         self.image1.set_colorkey((255, 255, 255), RLEACCEL) 
-        self.image2 = pygame.image.load('assets/images/bonus/bonus-2.png').convert()
+        self.image2 = pygame.image.load('assets/images/Rezise/bonus-2_r.png').convert()
         self.image2.set_colorkey((255, 255, 255), RLEACCEL)  
-        self.image3 = pygame.image.load('assets/images/bonus/bonus-3.png').convert()
+        self.image3 = pygame.image.load('assets/images/Rezise/bonus-3_r.png').convert()
         self.image3.set_colorkey((255, 255, 255), RLEACCEL)
-        self.image4 = pygame.image.load('assets/images/bonus/bonus-4.png').convert()
+        self.image4 = pygame.image.load('assets/images/Rezise/bonus-4_r.png').convert()
         self.image4.set_colorkey((255, 255, 255), RLEACCEL)                            
         self.game= game  
 
@@ -203,13 +224,13 @@ class Bonus:
         self.bonus = None      
         for e in pygame.event.get(): 
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 :
-                if mp[0]>=135 and mp[0]<425 and mp[1]>227 and mp[1]<552:
+                if mp[0]>=135*constx and mp[0]<425*constx and mp[1]>227*consty and mp[1]<552*consty:
                     self.bonus = self.x[0]     
                     self.game.player.bullets_num =20        
-                elif  mp[0]>527 and mp[0]<822 and mp[1]>227 and mp[1]<552:
+                elif  mp[0]>527*constx and mp[0]<822*constx and mp[1]>227*consty and mp[1]<552*consty:
                     self.bonus = self.x[1] 
                     self.game.player.bullets_num =20
-                elif mp[0]>952 and mp[0]<1218 and mp[1]>227 and mp[1]<552:
+                elif mp[0]>952*constx and mp[0]<1218*constx and mp[1]>227*consty and mp[1]<552*consty:
                     self.bonus = self.x[2]
                     self.game.player.bullets_num =20
 
