@@ -530,6 +530,7 @@ class Map():
 class Brick(pygame.sprite.Sprite):
     def __init__(self, x, y, block_type):
         super(Brick, self).__init__()
+        self.block_type = block_type
         if block_type == '$':
             self.surf = pygame.image.load("assets/images/stone1.png").convert()
         elif block_type == '#':
@@ -547,6 +548,7 @@ class TerrainBlock(pygame.sprite.Sprite):
 class House(pygame.sprite.Sprite):
     def __init__(self, x, y, block_type):
         super(House, self).__init__()
+        self.block_type = block_type
         for i in range(0,10):
             if block_type == str(i):
                 st = "assets/images/house/house" + str(i) + ".png"
@@ -557,6 +559,7 @@ class House(pygame.sprite.Sprite):
 class Tree(pygame.sprite.Sprite):
     def __init__(self, x, y, block_type):
         super(Tree, self).__init__()
+        self.block_type = block_type
         if block_type == 'T':
             self.surf = pygame.image.load("assets/images/tree/tree1.png") 
         elif block_type == 'O':
@@ -571,6 +574,7 @@ class Tree(pygame.sprite.Sprite):
 class Water(pygame.sprite.Sprite):
     def __init__(self, x, y, block_type):
         super(Water, self).__init__()
+        self.block_type = block_type
         if block_type == 'W':
             self.surf = pygame.image.load("assets/images/water/water3.png") 
         elif block_type == 'H':
@@ -588,17 +592,13 @@ class Portal(pygame.sprite.Sprite):
 class Door(pygame.sprite.Sprite):
     def __init__(self, x, y, block_type):
         super(Door, self).__init__()
-        self.surf = pygame.image.load("assets/images/closed_door.png").convert()
-        self.surf.set_colorkey((255, 255, 255), RLEACCEL)
-        self.rect = self.surf.get_rect(topleft = (x, y))
-
-class Open_door(pygame.sprite.Sprite):
-    def __init__(self, x, y, block_type):
-        super(Open_door, self).__init__()
+        self.block_type = block_type
         if block_type == 'D':
             self.surf = pygame.image.load("assets/images/open_door1.png").convert()
         elif block_type == 'd':
             self.surf = pygame.image.load("assets/images/open_door2.png").convert()
+        else:
+            self.surf = pygame.image.load("assets/images/closed_door.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
 
@@ -702,7 +702,7 @@ class Game():
                     self.bricks.add(water2)  
                     self.barriers.append((i, j))          
                 elif cell == 'D' or cell == 'd':
-                    door = Door(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    door = Door(j*self.map.cell_size, i*self.map.cell_size, cell + " ")
                     self.bricks.add(door)
                     self.barriers.append((i, j))
                     open_door = Door(j*self.map.cell_size, i*self.map.cell_size, cell)
@@ -781,9 +781,12 @@ class Game():
             # Draw the player on the screen
             self.screen.blit(self.player.surf, self.player.rect)
 
-            if len(self.mobs.sprites()) == 0:       
-                self.bonus.run(self.x) 
-                self.bonus.bonus_type(self.bonus.bonus)
+            if len(self.mobs.sprites()) == 0:
+                for entity in self.bricks:
+                    if entity.block_type == 'D ' or entity.block_type == 'd ':
+                        self.bricks.remove(entity)
+                # self.bonus.run(self.x) 
+                # self.bonus.bonus_type(self.bonus.bonus)
             for entity in self.bullets:
                 if entity.x <= SCREEN_WIDTH:
                     screen.blit(entity.bullet_img, (entity.x, entity.y))
