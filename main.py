@@ -17,6 +17,8 @@ info_object = pygame.display.Info()
 SCREEN_WIDTH, SCREEN_HEIGHT = info_object.current_w, info_object.current_h
 constx = SCREEN_WIDTH / 1366
 consty = SCREEN_HEIGHT / 768
+if constx == 1:
+   consth=1.00682012
 
 # Add intro in game
 # pygame.display.set_caption('Intro')
@@ -105,11 +107,28 @@ class Menu:
                 self.menu_point = 2   
             else:
                 self.menu_point = None
+    def get_lvl_point(self, mp):
+        
+        for e in pygame.event.get():
+            if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 : 
+                if mp[0]>86*constx and mp[0]<321*constx and mp[1]>290*consty and mp[1]<633*consty:
+                    self.game = Game()
+                    self.game.main()
+                elif  mp[0]>365*constx and mp[0]<571*constx and mp[1]>290*consty and mp[1]<633*consty:
+                    print('2') 
+                elif mp[0]>=601*constx and mp[0]<803*constx and mp[1]>290*consty and mp[1]<633*consty:
+                    print('3') 
+                elif mp[0]>=841*constx and mp[0]<1032*constx and mp[1]>290*consty and mp[1]<633*consty:
+                    print('4')  
+                elif mp[0]>=1075*constx and mp[0]<1270*constx and mp[1]>290*consty and mp[1]<633*consty:
+                    print('5')   
+
 
     def draw_lvl(self):
         while self.constPixel < 5:
             screen.blit(self.level, (constx*(128*constx + 42*constx * self.constPixel), 285*consty)) if not self.block_lvl else \
                 screen.blit(self.block_level, (128*constx + 42*constx * (self.constPixel + 1), 285*consty))
+            mp = pygame.mouse.get_pos() 
             self.block_lvl = True
             self.constPixel += 1
             
@@ -143,6 +162,7 @@ class Menu:
                 [screen.blit(self.block_level, (128*constx + 235*constx * (self.constPixel + 1), 285*consty)) for self.constPixel in range(4)]
                 self.render(screen, font_menu, self.backInChoiceLvl, self.menu_point)
                 self.get_menu_point(mp, self.punkts_after_play)
+                self.get_lvl_point(mp)
 
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
@@ -819,15 +839,17 @@ class Game():
 
             # Draw fps ounter
             fps = self.font.render('FPS: ' + str(int(self.clock.get_fps())), True, pygame.Color('white'))
-            hl = self.font.render(str(self.player.health)+'                  :'+str(self.player.bullets_num)+'/'+str(self.player.bullets_num_max) , True, pygame.Color('white'))
+            hl = self.font.render(str(self.player.health),True,pygame.Color('white'))
+            bl=  self.font.render(' :'+ str(self.player.bullets_num)+'/'+str(self.player.bullets_num_max) , True, pygame.Color('white'))
             health_image = pygame.image.load('assets/images/health.png').convert()
             health_image.set_colorkey((0, 0, 0), RLEACCEL)   
             bullet_image = pygame.image.load('assets/images/bullet.png').convert()
             bullet_image.set_colorkey((0, 0, 0), RLEACCEL)               
-            self.screen.blit(health_image,(math.ceil(1150*constx),math.ceil(20*consty)))
-            self.screen.blit(bullet_image,(math.ceil(1240*constx),math.ceil(20*consty)))
-            self.screen.blit(fps, (math.ceil(45*constx), math.ceil(38*consty)))
-            self.screen.blit(hl, (math.ceil(1181*constx), math.ceil( 40*consty)))
+            self.screen.blit(health_image,(math.ceil(1150*constx),math.ceil(20)))
+            self.screen.blit(bullet_image,(math.ceil(1240*constx),math.ceil(20)))
+            self.screen.blit(fps, (math.ceil(40*constx),  40))
+            self.screen.blit(hl, (math.ceil(1173*constx*consth), 40))
+            self.screen.blit(bl, (math.ceil(1290*constx), 40))
             # Update the display
             pygame.display.flip()
         # check status of player's health 
