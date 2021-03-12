@@ -74,7 +74,7 @@ class Field(object):
         self.field = [[0 for i in range(self.col)] for i in range(self.row)]
 
     def show(self):
-        f = open("map11.txt", "w")
+        f = open("assets/maps/fieldLee.txt", "w")
         field2 = [[0 for i in range(self.col)] for i in range(self.row)]
         for i in range(self.row):
             for j in range(self.col):

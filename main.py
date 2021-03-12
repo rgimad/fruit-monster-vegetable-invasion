@@ -385,7 +385,7 @@ class Bullet(pygame.sprite.Sprite):
 # Define a player object by extending pygame.sprite.Sprite
 # The surface drawn on the screen is now an attribute of 'player'
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y, game):
+    def __init__(self, x, y, game, *groups):
         super(Player, self).__init__()
         self.game = game # reference to Game object in which player is playing
         #self.surf = pygame.Surface((75, 75))
@@ -540,6 +540,7 @@ class Brick(pygame.sprite.Sprite):
 
 class TerrainBlock(pygame.sprite.Sprite):
     def __init__(self, x, y, block_type = 1):
+        self.block_type = block_type
         super(TerrainBlock, self).__init__()
         self.surf = pygame.image.load("assets/images/gross.png" if block_type == 1 else "assets/images/terrain2.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
@@ -585,6 +586,7 @@ class Water(pygame.sprite.Sprite):
 class Portal(pygame.sprite.Sprite):
     def __init__(self, x, y, block_type = 1):
         super(Portal, self).__init__()
+        self.block_type = block_type
         self.surf = pygame.image.load("assets/images/portal1.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
@@ -612,7 +614,7 @@ class Game():
         self.map = Map()
         self.map.load_from('assets/maps/map3.txt')
         self.running = False
-        
+        self.isCollision_with_portal = False
         pygame.init()
 
         self.bonus = Bonus(self)
@@ -627,8 +629,7 @@ class Game():
         self.bullets = pygame.sprite.Group()
         self.bricks = pygame.sprite.Group()
         self.terrain_blocks = pygame.sprite.Group()
-        #self.all_sprites = pygame.sprite.Group()
-        #self.all_sprites.add(self.player)
+        self.all_sprites = pygame.sprite.Group()
 
     def draw_map(self):
         for i in range(self.map.rows):
@@ -708,11 +709,12 @@ class Game():
                     open_door = Door(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.terrain_blocks.add(open_door)
                 elif cell == 'P':
-                    portal = Portal(j*self.map.cell_size, i*self.map.cell_size)
+                    portal = Portal(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.terrain_blocks.add(portal)
                 elif cell == '!': # Create a player - Sprite
-                    self.player = Player(j*self.map.cell_size, i*self.map.cell_size, self)
+                    self.player = Player(j*self.map.cell_size, i*self.map.cell_size, self, self.all_sprites)
                     new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
+                    self.all_sprites.add(self.player)
                     self.terrain_blocks.add(new_terrain_block)
                 elif cell == '@':
                     self.positionMobs.append((i, j))
@@ -769,15 +771,27 @@ class Game():
             self.bullets.update()
             #self.screen.fill((0, 0, 0))
             
-            for entity in self.terrain_blocks:
-                self.screen.blit(entity.surf, entity.rect)
-
-            for entity in self.bricks:
-                self.screen.blit(entity.surf, entity.rect)
-            # Draw mobs on the screen
-            for entity in self.mobs:
-                self.screen.blit(entity.surf, entity.rect)
-
+            if not self.isCollision_with_portal:
+                for entity in self.terrain_blocks:
+                    if pygame.sprite.collide_rect(entity, self.player) and entity.block_type == 'P':
+                        self.isCollision_with_portal = True
+                        self.bonus.run(self.x) 
+                        self.bonus.bonus_type(self.bonus.bonus)
+                        # trying to kill player
+                        self.all_sprites.remove(self.player)
+                        self.player.remove(self.all_sprites)
+                        self.player.kill()
+                        break
+                    else:
+                        self.screen.blit(entity.surf, entity.rect)
+                        self.isCollision_with_portal = False
+                for entity in self.bricks:
+                    if not self.isCollision_with_portal:
+                        self.screen.blit(entity.surf, entity.rect)
+                # Draw mobs on the screen
+                for entity in self.mobs:
+                    self.screen.blit(entity.surf, entity.rect)
+            self.isCollision_with_portal = False
             # Draw the player on the screen
             self.screen.blit(self.player.surf, self.player.rect)
 
@@ -785,12 +799,9 @@ class Game():
                 for entity in self.bricks:
                     if entity.block_type == 'D ' or entity.block_type == 'd ':
                         self.bricks.remove(entity)
-                # self.bonus.run(self.x) 
-                # self.bonus.bonus_type(self.bonus.bonus)
             for entity in self.bullets:
                 if entity.x <= SCREEN_WIDTH:
                     screen.blit(entity.bullet_img, (entity.x, entity.y))
-            
             # Draw the laser
             #pygame.draw.line(self.screen, (0, 30, 225), 
             #        [self.player.rect.x + 36, self.player.rect.y + 38], 
