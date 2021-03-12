@@ -226,10 +226,16 @@ class Bonus:
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 :
                 if mp[0]>=135 * constx and mp[0]<425 * constx and mp[1]>227 * consty and mp[1]<552 * consty:
                     self.bonus = self.x[0]     
+                   #self.game.stop=0 
+                   # self.game.isCollision = False                    
                 elif  mp[0]>527 * constx and mp[0]<822 * constx and mp[1]>227 * consty and mp[1]<552 * consty:
-                    self.bonus = self.x[1] 
+                    self.bonus = self.x[1]
+                   # self.game.stop = 0      
+                   # self.game.isCollision = False                 
                 elif mp[0]>952 * constx and mp[0]<1218 * constx and mp[1]>227 * consty and mp[1]<552 * consty:
                     self.bonus = self.x[2]
+                   # self.game.stop = 0  
+                   # self.game.isCollision = False                    
 
     def bonus_type(self,bonus):
         bonus = bonus
@@ -237,6 +243,7 @@ class Bonus:
             self.game.player.health +=1
         if bonus == 2:
             self.game.player.bullets_num = 25
+            self.game.player.bullets_num_max = 25        
         if bonus == 3:
             self.game.player.bullet_speed += 2
         if bonus == 4:
@@ -403,7 +410,8 @@ class Player(pygame.sprite.Sprite):
         self.health = 3
         self.player_speed = 5
         self.bullet_speed = 8
-        self.bullets_num = 15
+        self.bullets_num_max = 15
+        self.bullets_num = self.bullets_num_max
         self.state = 'WAIT'
         
     def isCollision(self, game):
@@ -497,9 +505,9 @@ class Player(pygame.sprite.Sprite):
 
         def reload_bullets(self):
             for _ in range(15):
-                if self.bullets_num == 15:
+                if self.bullets_num == self.bullets_num_max:
                     break
-                self.bullets_num = min(15, self.bullets_num + 5)
+                self.bullets_num = min(self.bullets_num_max, self.bullets_num + 5)
                 time.sleep(1)
             self.state = 'WAIT'
 
@@ -614,6 +622,7 @@ class Game():
         self.map = Map()
         self.map.load_from('assets/maps/map3.txt')
         self.running = False
+        self.stop = 1
         self.isCollision_with_portal = False
         pygame.init()
 
@@ -775,7 +784,8 @@ class Game():
                 for entity in self.terrain_blocks:
                     if pygame.sprite.collide_rect(entity, self.player) and entity.block_type == 'P':
                         self.isCollision_with_portal = True
-                        self.bonus.run(self.x) 
+                        if self.stop == 1:
+                            self.bonus.run(self.x) 
                         self.bonus.bonus_type(self.bonus.bonus)
                         # trying to kill player
                         self.all_sprites.remove(self.player)
@@ -808,8 +818,16 @@ class Game():
             #        [self.player.rect.x + 300*self.player.dir_x, self.player.rect.y + 300*self.player.dir_y], 2)
 
             # Draw fps ounter
-            fps = self.font.render('FPS: ' + str(int(self.clock.get_fps())) + '   Health :  ' + str(self.player.health)  + '  Bullets : '+ str(self.player.bullets_num), True, pygame.Color('white'))
-            self.screen.blit(fps, (50, 30))
+            fps = self.font.render('FPS: ' + str(int(self.clock.get_fps())), True, pygame.Color('white'))
+            hl = self.font.render(str(self.player.health)+'                  :'+str(self.player.bullets_num)+'/'+str(self.player.bullets_num_max) , True, pygame.Color('white'))
+            health_image = pygame.image.load('assets/images/health.png').convert()
+            health_image.set_colorkey((0, 0, 0), RLEACCEL)   
+            bullet_image = pygame.image.load('assets/images/bullet.png').convert()
+            bullet_image.set_colorkey((0, 0, 0), RLEACCEL)               
+            self.screen.blit(health_image,(math.ceil(1150*constx),math.ceil(20*consty)))
+            self.screen.blit(bullet_image,(math.ceil(1240*constx),math.ceil(20*consty)))
+            self.screen.blit(fps, (math.ceil(45*constx), math.ceil(38*consty)))
+            self.screen.blit(hl, (math.ceil(1181*constx), math.ceil( 40*consty)))
             # Update the display
             pygame.display.flip()
         # check status of player's health 
