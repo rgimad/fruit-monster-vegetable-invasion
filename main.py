@@ -18,7 +18,9 @@ SCREEN_WIDTH, SCREEN_HEIGHT = info_object.current_w, info_object.current_h
 constx = SCREEN_WIDTH / 1366
 consty = SCREEN_HEIGHT / 768
 if constx == 1:
-   consth=1.00682012
+   consth = 1.00682012
+else:
+    consth = 1
 
 # Add intro in game
 # pygame.display.set_caption('Intro')
@@ -107,8 +109,8 @@ class Menu:
                 self.menu_point = 2   
             else:
                 self.menu_point = None
+
     def get_lvl_point(self, mp):
-        
         for e in pygame.event.get():
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 : 
                 if mp[0]>86*constx and mp[0]<321*constx and mp[1]>290*consty and mp[1]<633*consty:
@@ -123,22 +125,20 @@ class Menu:
                 elif mp[0]>=1075*constx and mp[0]<1270*constx and mp[1]>290*consty and mp[1]<633*consty:
                     print('5')   
 
-
     def draw_lvl(self):
         while self.constPixel < 5:
             screen.blit(self.level, (constx*(128*constx + 42*constx * self.constPixel), 285*consty)) if not self.block_lvl else \
                 screen.blit(self.block_level, (128*constx + 42*constx * (self.constPixel + 1), 285*consty))
-            mp = pygame.mouse.get_pos() 
             self.block_lvl = True
             self.constPixel += 1
             
     def menu(self):
         done = False
-        self.menu_back = pygame.image.load('assets/images/background2.png')
+        menu_back = pygame.image.load('assets/images/background2.png')
         img = Image.open('assets/images/background2.png')
         img = img.resize((SCREEN_WIDTH, SCREEN_HEIGHT), PIL.Image.ANTIALIAS)
         img.save('assets/images/Resize/backgroundResize.png')
-        self.menu_back = pygame.image.load('assets/images/Resize/backgroundResize.png')
+        menu_back = pygame.image.load('assets/images/Resize/backgroundResize.png')
 
         pygame.init()
         pygame.mixer.music.load('assets/music/menu.mp3')
@@ -148,7 +148,7 @@ class Menu:
         pygame.key.set_repeat(0,0)
         pygame.mouse.set_visible(True)
         while not done:
-            screen.blit(self.menu_back, (0, 0))
+            screen.blit(menu_back, (0, 0))
             mp = pygame.mouse.get_pos()
             if not self.change_level:
                 if self.first:
@@ -181,11 +181,11 @@ class Menu:
                     elif self.menu_point == 1:
                         if not self.first:
                             self.change_level = True
-                            self.menu_back = pygame.image.load('assets/images/back_lvl.png')
+                            menu_back = pygame.image.load('assets/images/back_lvl.png')
                             img = Image.open('assets/images/back_lvl.png')
                             img = img.resize((SCREEN_WIDTH, SCREEN_HEIGHT), PIL.Image.ANTIALIAS)
                             img.save('assets/images/Resize/back_lvl_resize.png')
-                            self.menu_back = pygame.image.load('assets/images/Resize/back_lvl_resize.png')
+                            menu_back = pygame.image.load('assets/images/Resize/back_lvl_resize.png')
                         else:
                             exit()
                     elif self.menu_point == 2:
@@ -246,7 +246,7 @@ class Bonus:
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 :
                 if mp[0]>=135 * constx and mp[0]<425 * constx and mp[1]>227 * consty and mp[1]<552 * consty:
                     self.bonus = self.x[0]     
-                   #self.game.stop=0 
+                   # self.game.stop=0 
                    # self.game.isCollision = False                    
                 elif  mp[0]>527 * constx and mp[0]<822 * constx and mp[1]>227 * consty and mp[1]<552 * consty:
                     self.bonus = self.x[1]
@@ -269,7 +269,6 @@ class Bonus:
         if bonus == 4:
             self.game.player.player_speed = 7                                     
 
-
     def bonus_image(self,x,image_bonus):
         self.x = x
         for i in range(0,3):
@@ -282,7 +281,6 @@ class Bonus:
           if self.x[i] == 4:
               self.bonus_vec[i] = self.image4                                         
 
-
 class Mob(pygame.sprite.Sprite):
     def __init__(self, x, y, game):
         super(Mob, self).__init__()
@@ -291,89 +289,41 @@ class Mob(pygame.sprite.Sprite):
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
         # needs for lee algo
-        self.mob_position = (math.ceil(y / self.game.map.cell_size), math.ceil(x / self.game.map.cell_size))
+        self.mob_position = (y // self.game.map.cell_size, x // self.game.map.cell_size)
         pygame.mixer.Channel(2).play(rev_sound, -1)
         self.path_point = 1
-        self.offset_in_cell = 1
+        self.cur_step_len = self.game.map.cell_size
         self.speed = 3
         self.field = lee.Field(self.game.map.rows, self.game.map.cols, self.mob_position, \
-                                self.game.player.pos, self.game.barriers)
+                                self.game.player.getPosition(), self.game.barriers)
         self.field.emit()
         self.path = self.field.get_path()
         self.path.reverse()
 
-    def isCollision(self, mob, bricks):
-        return pygame.sprite.spritecollideany(mob, bricks)
-
     def update(self):
-        # print(self.pos)
-        # print(self.game.player.pos)
-        # print(self.game.barriers)
-        # print(self.path)
-        self.field.show()
-        # print(self.game.player.init_pos, self.game.player.pos)
-        if self.game.player.init_pos != self.game.player.pos:
-            self.field = lee.Field(self.game.map.rows, self.game.map.cols, self.mob_position, \
-                                self.game.player.pos, self.game.barriers)
-            self.field.emit()
-            self.path = self.field.get_path()
-            self.game.player.init_pos = self.game.player.pos
-            self.path.reverse()
-            self.path_point = 1
-            self.offset_in_cell = 0
-        elif self.offset_in_cell <= self.game.map.cell_size and self.path_point < len(self.path):
-            self.rect.move_ip((self.path[self.path_point][1] - self.mob_position[1]) * self.speed, 0)
-            self.rect.move_ip(0, (self.path[self.path_point][0] - self.mob_position[0]) * self.speed)
-            # print(self.j, 'lol')
-            self.offset_in_cell += self.speed
-            # print(self.i, 'lol')
-            # time.sleep(0.2)
-            # self.pos = self.path[self.i]
-            # self.i += 1
-        elif self.path_point < len(self.path):
-            # print(self.path_point, "lol")
-            self.path_point += 1
-            self.offset_in_cell = 0
-            self.mob_position = self.path[self.path_point - 1]
-            # self.pos = self.path[0]
-        temp_x = rd.randint(-5, 5)
-        temp_y = rd.randint(-5, 5)
-        # if self.j < self.game.map.cell_size:
-        #     self.rect.move_ip((path[self.i][0] - start[0]), 0)
-        #     self.rect.move_ip(0, (path[self.i][1] - start[1]))
-        #     self.j += 1
-        # elif self.i < len(path) - 1:
-        #     self.j = 1
-        #     self.i += 1
-        #     self.pos = path[self.i]
-        # else:
-        #     temp_x = rd.randint(-5, 5)
-        #     temp_y = rd.randint(-5, 5)
-        # self.rect.move_ip(0, temp_x)
-        # self.rect.move_ip(temp_y, 0)
+        # self.field.show()            
+        if self.path_point < len(self.path):
+            if self.cur_step_len > 0:
+                tx = (self.path[self.path_point][1] - self.mob_position[1]) * self.speed
+                ty = (self.path[self.path_point][0] - self.mob_position[0]) * self.speed
+                self.rect.move_ip(tx, ty)
+                # if pygame.sprite.spritecollideany(self, self.game.bricks): # undo move if collides
+                #     self.rect.move_ip(-tx, -ty) 
+                # else: # if okay
+                    # self.cur_step_len -= self.speed
+                self.cur_step_len -= self.speed
+            else:
+                #self.mob_position = self.path[self.path_point]
+                self.path_point += 1
+                self.cur_step_len = self.game.map.cell_size
 
-        # if pygame.sprite.spritecollideany(self, self.game.bricks):
-        #     self.rect.move_ip(0, -temp_x)
-        #     self.rect.move_ip(-temp_y, 0)
-        if pygame.sprite.spritecollideany(self.game.player, self.game.mobs):#spritecollide(self, self.game.player, 0):
-            # self.rect.move_ip(0, -temp_x)
-            # self.rect.move_ip(-temp_y, 0)
+        self.mob_position = (self.rect.y // self.game.map.cell_size, self.rect.x // self.game.map.cell_size)
+        if pygame.sprite.spritecollideany(self.game.player, self.game.mobs):
             self.game.player.rect.move_ip(0, 50)
             self.game.player.rect.move_ip(50, 0)
             self.game.player.health -= 1
             pygame.mixer.Channel(1).play(collision_sound)
-            print("player mob collision") 
-            
-        # Keep mobs on the screen
-        elif self.rect.left < 0:
-            self.rect.left = 0
-        elif self.rect.right > self.game.SCREEN_WIDTH:
-            self.rect.right = self.game.SCREEN_WIDTH
-        elif self.rect.top <= 0:
-            self.rect.top = 0
-        elif self.rect.bottom >= self.game.SCREEN_HEIGHT:
-            self.rect.bottom = self.game.SCREEN_HEIGHT
-          
+            print("player mob collision")        
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, x1, y1, speed, game):
@@ -408,23 +358,17 @@ class Bullet(pygame.sprite.Sprite):
            self.kill()              
            print("bullet killed mob")            
 
-
 # Define a player object by extending pygame.sprite.Sprite
 # The surface drawn on the screen is now an attribute of 'player'
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, game, *groups):
         super(Player, self).__init__()
         self.game = game # reference to Game object in which player is playing
-        #self.surf = pygame.Surface((75, 75))
         self.orig_img = pygame.image.load("assets/images/player2.png")
         self.surf = pygame.image.load("assets/images/player2.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         # create rect from surface and set initial coords
-        #self.rect = self.surf.get_rect(center = (self.game.SCREEN_WIDTH / 2, self.game.SCREEN_HEIGHT / 2))
         self.rect = self.surf.get_rect(topleft = (x, y))
-        # needs for lee algo
-        self.pos = (math.ceil(y / self.game.map.cell_size), math.ceil(x / self.game.map.cell_size))
-        self.init_pos = self.pos
         self.dir_x = 0
         self.dir_y = 1
         self.health = 3
@@ -433,67 +377,53 @@ class Player(pygame.sprite.Sprite):
         self.bullets_num_max = 15
         self.bullets_num = self.bullets_num_max
         self.state = 'WAIT'
-        
-    def isCollision(self, game):
-        return pygame.sprite.spritecollideany(self, game)
 
     def getPosition(self):
-        return (math.ceil(self.rect.y / self.game.map.cell_size), \
-                math.ceil(self.rect.x / self.game.map.cell_size))
+        return (self.rect.y // self.game.map.cell_size, \
+                self.rect.x // self.game.map.cell_size)
     # Move the sprite based on user keypresses
     def update(self, pressed_keys):
         if pressed_keys[K_UP] or pressed_keys[K_w]:
             self.rect.move_ip(0, -self.player_speed)
-            self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(0, self.player_speed)
-                self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.mobs):
                 print("He's crashed")
                 self.rect.move_ip(0, 100)
-                self.pos = self.getPosition()
                 self.health -= 1
                 pygame.mixer.Channel(1).play(collision_sound)
         if pressed_keys[K_DOWN] or pressed_keys[K_s]:
             self.rect.move_ip(0, self.player_speed)
-            self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(0, -self.player_speed)
-                self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.mobs):
                 print("He's crashed")
                 self.rect.move_ip(0, -100)
-                self.pos = self.getPosition()
                 self.health -= 1
                 pygame.mixer.Channel(1).play(collision_sound)
         if pressed_keys[K_LEFT] or pressed_keys[K_a]:
             self.rect.move_ip(-self.player_speed, 0)
-            self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(self.player_speed, 0)
-                self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.mobs):
                 print("Game over! He's crashed")
                 self.rect.move_ip(100, 0)
-                self.pos = self.getPosition()
                 self.health -= 1
                 pygame.mixer.Channel(1).play(collision_sound)
         if pressed_keys[K_RIGHT] or pressed_keys[K_d]:
             self.rect.move_ip(self.player_speed, 0)
-            self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(-self.player_speed, 0)
-                self.pos = self.getPosition()
             if pygame.sprite.spritecollideany(self, self.game.mobs):
                 print("Game over! He's crashed")
                 self.rect.move_ip(-100, 0)
-                self.pos = self.getPosition()
                 self.health -= 1
                 pygame.mixer.Channel(1).play(collision_sound)
         if pygame.sprite.groupcollide(self.game.mobs, self.game.bullets, True, True):
            pygame.mixer.Channel(1).play(rd.choice(damage_sound))
            self.kill()              
            print("bullet killed mob")
+
         # Keep player on the screen
         if self.rect.left < 0:
             self.rect.left = 0
@@ -660,6 +590,20 @@ class Game():
         self.terrain_blocks = pygame.sprite.Group()
         self.all_sprites = pygame.sprite.Group()
 
+    def mobs_path_to_player(self):
+        for mob in self.mobs:
+            #print('calculating path...')
+            mob.field = lee.Field(self.map.rows, self.map.cols, mob.mob_position, \
+                                self.player.getPosition(), self.barriers)
+            mob.field.emit()
+            mob.path = mob.field.get_path()
+            mob.path.reverse()
+            #print(mob.path, 'mob pos = ', mob.mob_position, 'player pos = ', self.getPosition())
+            mob.path_point = 1
+            mob.cur_step_len = self.map.cell_size
+            #mob.field.show()
+        #print(self.getPosition(), self.game.player.getPosition())
+
     def draw_map(self):
         for i in range(self.map.rows):
             for j in range(self.map.cols):
@@ -759,7 +703,9 @@ class Game():
         pygame.mixer.music.play(loops=-1)
         self.running = True # flag that show is game running or not
         pygame.event.set_grab(True)
-
+        # create own event - reload to lee for mobs
+        update_paths = pygame.USEREVENT + 1
+        pygame.time.set_timer(update_paths, 3000)
         self.draw_map()
         while self.player.health > 0 and self.running:   # this cicle defines health of our player
             self.clock.tick(self.FPS)                    # delay according to fps
@@ -788,6 +734,8 @@ class Game():
                         self.player.dir_y = (m_y - self.player.rect.y) / l
                 elif event.type == pygame.QUIT:   # if user closes the widow -> quit
                     self.running = False
+                elif event.type == update_paths:
+                    self.mobs_path_to_player()
 
             # Get all the keys currently pressed
             pressed_keys = pygame.key.get_pressed()
@@ -804,6 +752,7 @@ class Game():
                 for entity in self.terrain_blocks:
                     if pygame.sprite.collide_rect(entity, self.player) and entity.block_type == 'P':
                         self.isCollision_with_portal = True
+                        self.player.state = "RELOADING"
                         if self.stop == 1:
                             self.bonus.run(self.x) 
                         self.bonus.bonus_type(self.bonus.bonus)
@@ -840,7 +789,7 @@ class Game():
             # Draw fps ounter
             fps = self.font.render('FPS: ' + str(int(self.clock.get_fps())), True, pygame.Color('white'))
             hl = self.font.render(str(self.player.health),True,pygame.Color('white'))
-            bl=  self.font.render(' :'+ str(self.player.bullets_num)+'/'+str(self.player.bullets_num_max) , True, pygame.Color('white'))
+            bl = self.font.render(':'+ str(self.player.bullets_num)+'/'+str(self.player.bullets_num_max) , True, pygame.Color('white'))
             health_image = pygame.image.load('assets/images/health.png').convert()
             health_image.set_colorkey((0, 0, 0), RLEACCEL)   
             bullet_image = pygame.image.load('assets/images/bullet.png').convert()
