@@ -415,13 +415,18 @@ class Player(pygame.sprite.Sprite):
             self.rect.top = 0
         if self.rect.bottom >= self.game.map.rows*self.game.map.cell_size:
             self.rect.bottom = self.game.map.rows*self.game.map.cell_size
-
+    
     def point_at(self, x, y):
-        direction = pygame.math.Vector2(x, y) - self.rect.center
+        direction = pygame.math.Vector2(x, y) - \
+            (self.rect.x - self.game.camera.x + SCREEN_WIDTH//2, self.rect.y - self.game.camera.y + SCREEN_HEIGHT//2)
         angle = direction.angle_to((1, 0))
         self.surf = pygame.transform.rotate(self.orig_img, angle)
-        self.rect = self.surf.get_rect(center=self.rect.center)
-    
+        center_x = self.surf.get_width() // 2
+        center_y = self.surf.get_height() // 2
+        rect_surface = self.rect.copy()  # Create a new rectangle.
+        rect_surface.center = (center_x, center_y)  # Move the new rectangle to the center of the new image.
+        self.surf = self.surf.subsurface(rect_surface)  # Take out the center of the new image(Cut angles)
+        
     def shoot(self):
         if self.state == 'RELOADING':
             return
@@ -795,6 +800,7 @@ class Game():
             self.camera.follow(self.player, self.map)
             
             if len(self.mobs.sprites()) == 0:
+                pygame.mixer.Channel(2).pause()
                 for entity in self.bricks:
                     if entity.block_type == 'D ' or entity.block_type == 'd ':
                         self.bricks.remove(entity)
