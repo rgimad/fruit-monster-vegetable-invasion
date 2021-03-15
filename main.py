@@ -350,7 +350,7 @@ class Player(pygame.sprite.Sprite):
         self.surf = pygame.image.load("assets/images/player2.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         # create rect from surface and set initial coords
-        self.rect = self.surf.get_rect(topleft = (x, y))
+        self.rect = self.surf.get_rect(topleft = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         self.dir_x = 0
         self.dir_y = 1
         self.health = 3
@@ -406,15 +406,15 @@ class Player(pygame.sprite.Sprite):
            self.kill()              
            print("bullet killed mob")
 
-        # Keep player on the screen
+        # Keep player on the map
         if self.rect.left < 0:
             self.rect.left = 0
-        if self.rect.right > self.game.SCREEN_WIDTH:
-            self.rect.right = self.game.SCREEN_WIDTH
+        if self.rect.right > self.game.map.cols*self.game.map.cell_size:
+            self.rect.right = self.game.map.cols*self.game.map.cell_size
         if self.rect.top <= 0:
             self.rect.top = 0
-        if self.rect.bottom >= self.game.SCREEN_HEIGHT:
-            self.rect.bottom = self.game.SCREEN_HEIGHT
+        if self.rect.bottom >= self.game.map.rows*self.game.map.cell_size:
+            self.rect.bottom = self.game.map.rows*self.game.map.cell_size
 
     def point_at(self, x, y):
         direction = pygame.math.Vector2(x, y) - self.rect.center
@@ -448,7 +448,35 @@ class Player(pygame.sprite.Sprite):
         if self.state == 'WAIT':
             self.state = 'RELOADING'
             x.start()
-            
+
+class Camera():
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.area_width = SCREEN_WIDTH #area_width
+        self.area_height = SCREEN_HEIGHT #area_height
+        self.speed = 10
+        self.inner_bound = 0.7
+    
+    def follow(self, player, game_map):
+        dx, dy = 0, 0
+        if (player.rect.x - self.x)*2 > self.area_width*self.inner_bound:
+            dx = self.speed
+        if (player.rect.x - self.x)*2 < -self.area_width*self.inner_bound:
+            dx = -self.speed
+        if (player.rect.y - self.y)*2 > self.area_height*self.inner_bound:
+            dy = self.speed
+        if (player.rect.y - self.y)*2 < -self.area_height*self.inner_bound:
+            dy = -self.speed
+
+        new_x, new_y = self.x + dx, self.y + dy
+
+        if new_x - self.area_width // 2 >= 10 and new_x + self.area_width // 2 <= game_map.cols*game_map.cell_size:
+            self.x = new_x
+
+        if new_y - self.area_height // 2 >= 0 and new_y + self.area_height // 2 <= game_map.rows*game_map.cell_size:
+            self.y = new_y
+
 class Map():
     def __init__(self):
         self.rows = None
@@ -680,6 +708,11 @@ class Game():
         for mobPos in self.positionMobs:
             new_mob = Mob(mobPos[1]*self.map.cell_size, mobPos[0]*self.map.cell_size, self)
             self.mobs.add(new_mob)
+
+    def init_cam(self):
+        cam_x, cam_y = self.player.rect.x, self.player.rect.y
+        self.camera = Camera(cam_x, cam_y)
+
     def main(self):
         pygame.mixer.music.load('assets/music/2_level.mp3')
         pygame.mixer.music.play(loops=-1)
@@ -689,6 +722,7 @@ class Game():
         update_paths = pygame.USEREVENT + 1
         pygame.time.set_timer(update_paths, 3000)
         self.draw_map()
+        self.init_cam()
         while self.player.health > 0 and self.running:   # this cicle defines health of our player
             self.clock.tick(self.FPS)                    # delay according to fps
 
@@ -710,10 +744,10 @@ class Game():
                         self.player.shoot()
                 elif event.type == pygame.MOUSEMOTION:
                     m_x, m_y = event.pos
-                    l = math.sqrt((m_x - self.player.rect.x)**2 + (m_y - self.player.rect.y)**2)
+                    l = math.sqrt((m_x - (self.player.rect.x - self.camera.x + SCREEN_WIDTH//2))**2 + (m_y - (self.player.rect.y - self.camera.y + SCREEN_HEIGHT//2))**2)
                     if l > 0:
-                        self.player.dir_x = (m_x - self.player.rect.x) / l
-                        self.player.dir_y = (m_y - self.player.rect.y) / l
+                        self.player.dir_x = (m_x - (self.player.rect.x - self.camera.x + SCREEN_WIDTH//2)) / l
+                        self.player.dir_y = (m_y - (self.player.rect.y - self.camera.y + SCREEN_HEIGHT//2)) / l
                 elif event.type == pygame.QUIT:   # if user closes the widow -> quit
                     self.running = False
                 elif event.type == update_paths:
@@ -729,6 +763,8 @@ class Game():
             self.mobs.update()
             self.bullets.update()
             #self.screen.fill((0, 0, 0))
+
+            # all object are rendered according to camera position and center of the screen
             
             if not self.isCollision_with_portal:
                 for entity in self.terrain_blocks:
@@ -744,25 +780,27 @@ class Game():
                         self.player.kill()
                         break
                     else:
-                        self.screen.blit(entity.surf, entity.rect)
+                        self.screen.blit(entity.surf, (entity.rect.x - self.camera.x + SCREEN_WIDTH//2, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2))
                         self.isCollision_with_portal = False
                 for entity in self.bricks:
                     if not self.isCollision_with_portal:
-                        self.screen.blit(entity.surf, entity.rect)
+                        self.screen.blit(entity.surf, (entity.rect.x - self.camera.x + SCREEN_WIDTH//2, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2))
                 # Draw mobs on the screen
                 for entity in self.mobs:
-                    self.screen.blit(entity.surf, entity.rect)
+                    self.screen.blit(entity.surf, (entity.rect.x - self.camera.x + SCREEN_WIDTH//2, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2))
             self.isCollision_with_portal = False
             # Draw the player on the screen
-            self.screen.blit(self.player.surf, self.player.rect)
-
+            self.screen.blit(self.player.surf, (self.player.rect.x - self.camera.x + SCREEN_WIDTH//2, self.player.rect.y - self.camera.y + SCREEN_HEIGHT//2))
+            # Camera follows the player
+            self.camera.follow(self.player, self.map)
+            
             if len(self.mobs.sprites()) == 0:
                 for entity in self.bricks:
                     if entity.block_type == 'D ' or entity.block_type == 'd ':
                         self.bricks.remove(entity)
             for entity in self.bullets:
-                if entity.x <= SCREEN_WIDTH:
-                    screen.blit(entity.bullet_img, (entity.x, entity.y))
+                if entity.x <= self.map.cols*self.map.cell_size:
+                    screen.blit(entity.bullet_img, (entity.rect.x - self.camera.x + SCREEN_WIDTH//2, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2))
             # Draw the laser
             #pygame.draw.line(self.screen, (0, 30, 225), 
             #        [self.player.rect.x + 36, self.player.rect.y + 38], 
