@@ -504,9 +504,9 @@ class Brick(pygame.sprite.Sprite):
     def __init__(self, x, y, block_type):
         super(Brick, self).__init__()
         self.block_type = block_type
-        if block_type == '$':
+        if block_type == '#':
             self.surf = pygame.image.load("assets/images/stone1.png").convert()
-        elif block_type == '#':
+        elif block_type == '$':
             self.surf = pygame.image.load("assets/images/brick2.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
@@ -585,7 +585,7 @@ class Game():
         self.barriers = []
         self.positionMobs = []
         self.map = Map()
-        self.map.load_from('assets/maps/map3.txt')
+        self.map.load_from('assets/maps/map4.txt')
         self.running = False
         self.stop = 1
         self.isCollision_with_portal = False
@@ -624,6 +624,10 @@ class Game():
             for j in range(self.map.cols):
                 cell = self.map.cell(i, j)
                 if cell == '#':
+                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(new_brick)
+                    self.barriers.append((i, j))
+                elif cell == '$':
                     new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.bricks.add(new_brick)
                     self.barriers.append((i, j))
@@ -709,7 +713,7 @@ class Game():
                     new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
                     self.terrain_blocks.add(new_terrain_block)                            
                 else:
-                    print('map error: incorrect cell type')                  
+                    print('map error: incorrect cell type', cell)                  
         for mobPos in self.positionMobs:
             new_mob = Mob(mobPos[1]*self.map.cell_size, mobPos[0]*self.map.cell_size, self)
             self.mobs.add(new_mob)
