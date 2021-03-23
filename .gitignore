@@ -1,2 +1,4 @@
 /assets/images/Resize/*
-# *.code-workspace
+*.code-workspace
+.vscode/
+/main.exe
