@@ -314,7 +314,7 @@ class Mob(pygame.sprite.Sprite):
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, x1, y1, speed, game):
         super(Bullet, self).__init__()
-        self.bullet_img = pygame.image.load('assets/images/arrow.png')
+        self.bullet_img = pygame.image.load('assets/images/arrow.png').convert()
         self.bullet_img.set_colorkey((255, 255, 255), RLEACCEL)
         self.game = game
         self.x = x  
@@ -354,7 +354,7 @@ class Player(pygame.sprite.Sprite):
         self.surf = pygame.image.load("assets/images/player2.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         # create rect from surface and set initial coords
-        self.rect = self.surf.get_rect(topleft = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+        self.rect = self.surf.get_rect(topleft = (SCREEN_WIDTH-100 // 2, SCREEN_HEIGHT-100 // 2))
         self.dir_x = 0
         self.dir_y = 1
         self.health = 3
@@ -457,6 +457,19 @@ class Player(pygame.sprite.Sprite):
         if self.state == 'WAIT':
             self.state = 'RELOADING'
             x.start()
+
+class Saving():
+    def __init__(self,game):
+        self.game=game
+    def main(self,mp_x,mp_y,e):
+        self.option = None 
+        if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 :
+            if mp_x>=168 * constx and mp_x<453 * constx and mp_y>340 * consty and mp_y<420 * consty:
+                self.game.paused = False 
+            elif  mp_x>168 * constx and mp_x<453 * constx and mp_y>474 * consty and mp_y<538 * consty:
+                print("начать заново")  
+            elif mp_x>168 * constx and mp_x<453 * constx and mp_y>595 * consty and mp_y<669 * consty:                          
+                print("выйти в меню")  
 
 class Camera():
     def __init__(self, x, y):
@@ -589,6 +602,8 @@ class Game():
         self.barriers = []
         self.positionMobs = []
         self.map = Map()
+        self.paused = False
+        self.save_image=self.get_resize_image('save', SCREEN_WIDTH, SCREEN_HEIGHT)
         self.map.load_from('assets/maps/map4.txt')
         self.running = False
         self.stop = 1
@@ -608,6 +623,12 @@ class Game():
         self.bricks = pygame.sprite.Group()
         self.terrain_blocks = pygame.sprite.Group()
         self.all_sprites = pygame.sprite.Group()
+    
+    def get_resize_image(self, name_img, width, height):
+        img = Image.open('assets/images/' + name_img + '.png')
+        img = img.resize((width, height), PIL.Image.ANTIALIAS)
+        img.save('assets/images/Resize/' + name_img + 'Resize.png')
+        return pygame.image.load('assets/images/Resize/' + name_img + 'Resize.png').convert()
 
     def mobs_path_to_player(self):
         for mob in self.mobs:
@@ -742,7 +763,8 @@ class Game():
             for event in pygame.event.get():             # check events
                 if event.type == pygame.KEYDOWN:         # when user hits some button
                     if event.key == pygame.K_ESCAPE:     # Esc -> quit
-                        self.running = False  
+                        self.paused = not self.paused
+                        screen.blit(self.save_image, (0 * constx, 0 * consty))
                     elif event.key == pygame.K_m:     
                         pygame.mixer.music.pause() 
                     elif event.key == pygame.K_n:     
@@ -754,7 +776,8 @@ class Game():
        
                 elif event.type == pygame.MOUSEBUTTONDOWN:         
                     if event.button == 1:
-                        self.player.shoot()
+                        if self.paused == False:
+                           self.player.shoot()
                 elif event.type == pygame.MOUSEMOTION:
                     m_x, m_y = event.pos
                     l = math.sqrt((m_x - (self.player.rect.x - self.camera.x + SCREEN_WIDTH//2))**2 + (m_y - (self.player.rect.y - self.camera.y + SCREEN_HEIGHT//2))**2)
@@ -770,51 +793,54 @@ class Game():
             pressed_keys = pygame.key.get_pressed()
             # Rotating sprite depending on mouse motion
             self.player.point_at(*pygame.mouse.get_pos())
-            # Update the player sprite based on user keypresses
-            self.player.update(pressed_keys)
-            # Update mobs movement
-            self.mobs.update()
-            self.bullets.update()
-            #self.screen.fill((0, 0, 0))
+            if self.paused == False:
+                self.player.update(pressed_keys)
+                # Update mobs movement
+                self.mobs.update()
+                self.bullets.update()
+                #self.screen.fill((0, 0, 0))
 
-            # all object are rendered according to camera position and center of the screen
-            
-            if not self.isCollision_with_portal:
-                for entity in self.terrain_blocks:
-                    if pygame.sprite.collide_rect(entity, self.player) and entity.block_type == 'P':
-                        self.isCollision_with_portal = True
-                        self.player.state = "RELOADING"
-                        if self.stop == 1:
-                            self.bonus.run(self.x) 
-                        self.bonus.bonus_type(self.bonus.bonus)
-                        # trying to kill player
-                        self.all_sprites.remove(self.player)
-                        self.player.remove(self.all_sprites)
-                        self.player.kill()
-                        break
-                    else:
+                # all object are rendered according to camera position and center of the screen
+                
+                if not self.isCollision_with_portal:
+                    for entity in self.terrain_blocks:
+                        if pygame.sprite.collide_rect(entity, self.player) and entity.block_type == 'P':
+                            self.isCollision_with_portal = True
+                            self.player.state = "RELOADING"
+                            if self.stop == 1:
+                                self.bonus.run(self.x) 
+                            self.bonus.bonus_type(self.bonus.bonus)
+                            # trying to kill player
+                            self.all_sprites.remove(self.player)
+                            self.player.remove(self.all_sprites)
+                            self.player.kill()
+                            break
+                        else:
+                            self.screen.blit(entity.surf, (entity.rect.x - self.camera.x + SCREEN_WIDTH//2, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2))
+                            self.isCollision_with_portal = False
+                    for entity in self.bricks:
+                        if not self.isCollision_with_portal:
+                            self.screen.blit(entity.surf, (entity.rect.x - self.camera.x + SCREEN_WIDTH//2, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2))
+                    # Draw mobs on the screen
+                    for entity in self.mobs:
                         self.screen.blit(entity.surf, (entity.rect.x - self.camera.x + SCREEN_WIDTH//2, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2))
-                        self.isCollision_with_portal = False
-                for entity in self.bricks:
-                    if not self.isCollision_with_portal:
-                        self.screen.blit(entity.surf, (entity.rect.x - self.camera.x + SCREEN_WIDTH//2, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2))
-                # Draw mobs on the screen
-                for entity in self.mobs:
-                    self.screen.blit(entity.surf, (entity.rect.x - self.camera.x + SCREEN_WIDTH//2, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2))
-            self.isCollision_with_portal = False
-            # Draw the player on the screen
-            self.screen.blit(self.player.surf, (self.player.rect.x - self.camera.x + SCREEN_WIDTH//2, self.player.rect.y - self.camera.y + SCREEN_HEIGHT//2))
-            # Camera follows the player
-            self.camera.follow(self.player, self.map)
-            
-            if len(self.mobs.sprites()) == 0:
-                pygame.mixer.Channel(2).pause()
-                for entity in self.bricks:
-                    if entity.block_type == 'D ' or entity.block_type == 'd ':
-                        self.bricks.remove(entity)
-            for entity in self.bullets:
-                if entity.x <= self.map.cols*self.map.cell_size:
-                    screen.blit(entity.bullet_img, (entity.rect.x - self.camera.x + SCREEN_WIDTH//2, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2))
+                self.isCollision_with_portal = False
+                # Draw the player on the screen
+                self.screen.blit(self.player.surf, (self.player.rect.x - self.camera.x + SCREEN_WIDTH//2, self.player.rect.y - self.camera.y + SCREEN_HEIGHT//2))
+                # Camera follows the player
+                self.camera.follow(self.player, self.map)
+
+                if len(self.mobs.sprites()) == 0:
+                    pygame.mixer.Channel(2).pause()
+                    for entity in self.bricks:
+                        if entity.block_type == 'D ' or entity.block_type == 'd ':
+                            self.bricks.remove(entity)
+                for entity in self.bullets:
+                    if entity.x <= self.map.cols*self.map.cell_size:
+                        screen.blit(entity.bullet_img, (entity.rect.x - self.camera.x + SCREEN_WIDTH//2, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2))
+            else:
+                saving = Saving(self)
+                saving.main(*pygame.mouse.get_pos(),event)
             # Draw the laser
             #pygame.draw.line(self.screen, (0, 30, 225), 
             #        [self.player.rect.x + 36, self.player.rect.y + 38], 
@@ -827,12 +853,13 @@ class Game():
             health_image = pygame.image.load('assets/images/health.png').convert()
             health_image.set_colorkey((0, 0, 0), RLEACCEL)   
             bullet_image = pygame.image.load('assets/images/bullet.png').convert()
-            bullet_image.set_colorkey((0, 0, 0), RLEACCEL)               
-            self.screen.blit(health_image,(math.ceil(1150*constx),math.ceil(20)))
-            self.screen.blit(bullet_image,(math.ceil(1240*constx),math.ceil(20)))
-            self.screen.blit(fps, (math.ceil(40*constx),  40))
-            self.screen.blit(hl, (math.ceil(1173*constx*consth), 40))
-            self.screen.blit(bl, (math.ceil(1290*constx), 40))
+            bullet_image.set_colorkey((0, 0, 0), RLEACCEL) 
+            if self.paused == False:                
+                self.screen.blit(health_image,(math.ceil(1150*constx),math.ceil(20)))
+                self.screen.blit(bullet_image,(math.ceil(1240*constx),math.ceil(20)))
+                self.screen.blit(fps, (math.ceil(40*constx),  40))
+                self.screen.blit(hl, (math.ceil(1173*constx*consth), 40))
+                self.screen.blit(bl, (math.ceil(1290*constx), 40))
             # Update the display
             pygame.display.flip()
         # check status of player's health 
