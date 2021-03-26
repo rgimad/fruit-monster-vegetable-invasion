@@ -636,7 +636,7 @@ class TerrainBlock(pygame.sprite.Sprite):
     def __init__(self, x, y, block_type = 1):
         self.block_type = block_type
         super(TerrainBlock, self).__init__()
-        self.surf = pygame.image.load("assets/images/gross"+str(index_level)+".png"  if block_type == 1 else "assets/images/terrain2.png").convert()
+        self.surf = pygame.image.load("assets/images/gross" + str(index_level) + ".png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
 
@@ -812,6 +812,9 @@ class Game():
                     self.barriers.append((i, j))
                 elif cell == '.':
                     new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
+                    self.terrain_blocks.add(new_terrain_block)
+                elif cell == "'":
+                    new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.terrain_blocks.add(new_terrain_block)
                 elif cell == ',':
                     new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
