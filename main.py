@@ -248,13 +248,16 @@ class Bonus:
         if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 :
             if mp_x >= 135 * constx and mp_x < 425 * constx and mp_y > 227 * consty and mp_y < 552 * consty:
                 self.bonus = self.x[0]    
-                self.game.add_bonus_to_player = True                   
+                self.game.add_bonus_to_player = True             
+                self.save_info(self.bonus)      
             elif mp_x > 527 * constx and mp_x < 822 * constx and mp_y > 227 * consty and mp_y < 552 * consty:
                 self.bonus = self.x[1]
-                self.game.add_bonus_to_player = True                
+                self.game.add_bonus_to_player = True  
+                self.save_info(self.bonus)              
             elif mp_x > 952 * constx and mp_x < 1218 * constx and mp_y > 227 * consty and mp_y < 552 * consty:
                 self.bonus = self.x[2]
-                self.game.add_bonus_to_player = True               
+                self.game.add_bonus_to_player = True  
+                self.save_info(self.bonus)             
 
     def bonus_type(self, bonus):
         if bonus == 1:
@@ -266,6 +269,14 @@ class Bonus:
             self.game.player.bullet_speed += 2
         if bonus == 4:
             self.game.player.player_speed = 7                                     
+
+    def save_info(self,bonus):
+        b = open("save/bonus"+str(index_level)+".txt",'w') 
+        b.write(str(bonus))
+        b.close()
+        l = open("save/open_lvl.txt",'w') 
+        l.write(str(index_level+1))
+        l.close()
 
     def bonus_image(self, x, image_bonus):
         self.x = x
@@ -838,6 +849,11 @@ class Game():
         update_paths = pygame.USEREVENT + 1
         pygame.time.set_timer(update_paths, 3000)
         self.draw_map()
+        for i in range(1,index_level):
+            r = open("save/bonus"+ str(i)+".txt",'r')
+            read_bonus = r.readline()
+            read_bonus = int(read_bonus)
+            self.bonus.bonus_type(read_bonus)        
         self.init_cam()
         while self.player.health > 0 and self.running and index_level <= 4:   # this cicle defines health of our player
             self.clock.tick(self.FPS)                    # delay according to fps
@@ -892,7 +908,6 @@ class Game():
                             self.player.state = "RELOADING"
                             if not self.add_bonus_to_player:
                                 self.bonus.run(self.x, event, *pygame.mouse.get_pos()) 
-                                self.bonus.bonus_type(self.bonus.bonus)
                             else:
                                 pygame.image.load('assets/images/Resize/loadingResize.png')
                                 index_level += 1
