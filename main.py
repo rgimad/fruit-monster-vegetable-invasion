@@ -45,6 +45,7 @@ buulet_to_brick_sound = pygame.mixer.Sound('assets/sounds/bullet_to_brick.ogg')
 
 notshoot_sound = pygame.mixer.Sound('assets/sounds/notshoot.ogg')
 reload_sound = pygame.mixer.Sound('assets/sounds/reload.ogg')
+portal_sound = pygame.mixer.Sound('assets/sounds/portal.ogg')
 
 from pygame.locals import (
     RLEACCEL,
@@ -237,7 +238,13 @@ class Bonus:
         self.image3 = self.get_resize_image('bonus-3', math.ceil(315*constx), math.ceil(367*consty))
         self.image3.set_colorkey((255, 255, 255), RLEACCEL)
         self.image4 = self.get_resize_image('bonus-4', math.ceil(315*constx), math.ceil(367*consty))
-        self.image4.set_colorkey((255, 255, 255), RLEACCEL)                            
+        self.image4.set_colorkey((255, 255, 255), RLEACCEL)     
+        self.image5 = self.get_resize_image('bonus-5', math.ceil(315*constx), math.ceil(367*consty))
+        self.image5.set_colorkey((255, 255, 255), RLEACCEL)   
+        self.image6 = self.get_resize_image('bonus-6', math.ceil(315*constx), math.ceil(367*consty))
+        self.image6.set_colorkey((255, 255, 255), RLEACCEL)   
+        self.image7 = self.get_resize_image('bonus-7', math.ceil(315*constx), math.ceil(367*consty))
+        self.image7.set_colorkey((255, 255, 255), RLEACCEL)                        
     
     def __del__(self):
         pass
@@ -277,12 +284,18 @@ class Bonus:
         if bonus == 1:
             self.game.player.health += 1
         if bonus == 2:
-            self.game.player.bullets_num = 25
-            self.game.player.bullets_num_max = 25        
+            self.game.player.bullets_num += 10
+            self.game.player.bullets_num_max += 10        
         if bonus == 3:
             self.game.player.bullet_speed += 2
         if bonus == 4:
-            self.game.player.player_speed = 7                                     
+            self.game.player.player_speed += 1       
+        if bonus == 5:
+            print("заморозка")
+        if bonus == 6:
+            print("яд")
+        if bonus == 7:
+            print("щит")                               
 
     def save_info(self,bonus):
         b = open("save/bonus_after_"+str(index_level)+"_lvl.txt",'w') 
@@ -303,7 +316,13 @@ class Bonus:
           if self.x[i] == 3:
               self.bonus_vec[i] = self.image3
           if self.x[i] == 4:
-              self.bonus_vec[i] = self.image4                                         
+              self.bonus_vec[i] = self.image4  
+          if self.x[i] == 5:
+              self.bonus_vec[i] = self.image5     
+          if self.x[i] == 6:
+             self.bonus_vec[i] = self.image6     
+          if self.x[i] == 7:
+              self.bonus_vec[i] = self.image7                                            
 
 class Mob(pygame.sprite.Sprite):
     def __init__(self, x, y, game):
@@ -317,7 +336,7 @@ class Mob(pygame.sprite.Sprite):
         pygame.mixer.Channel(2).play(rev_sound, -1)
         self.path_point = 1
         self.cur_step_len = self.game.map.cell_size
-        self.speed = 3
+        self.speed = 3 + index_level 
         self.field = lee.Field(self.game.map.rows, self.game.map.cols, self.mob_position, \
                                 self.game.player.getPosition(), self.game.barriers)
         self.field.emit()
@@ -604,6 +623,8 @@ class Brick(pygame.sprite.Sprite):
             self.surf = pygame.image.load("assets/images/stone1.png").convert()
         elif block_type == '$':
             self.surf = pygame.image.load("assets/images/brick2.png").convert()
+        elif block_type == 'B':
+            self.surf = pygame.image.load("assets/images/box.png").convert()     
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
 
@@ -615,7 +636,7 @@ class TerrainBlock(pygame.sprite.Sprite):
     def __init__(self, x, y, block_type = 1):
         self.block_type = block_type
         super(TerrainBlock, self).__init__()
-        self.surf = pygame.image.load("assets/images/gross.png" if block_type == 1 else "assets/images/terrain2.png").convert()
+        self.surf = pygame.image.load("assets/images/gross"+str(index_level)+".png"  if block_type == 1 else "assets/images/terrain2.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
 
@@ -649,7 +670,15 @@ class Tree(pygame.sprite.Sprite):
         elif block_type == 'X':
             self.surf = pygame.image.load("assets/images/tree/tree3.png") 
         elif block_type == 'A':
-            self.surf = pygame.image.load("assets/images/tree/tree4.png")             
+            self.surf = pygame.image.load("assets/images/tree/tree4.png")     
+        elif block_type == 't':
+            self.surf = pygame.image.load("assets/images/tree/tree11.png") 
+        elif block_type == 'o':
+            self.surf = pygame.image.load("assets/images/tree/tree12.png") 
+        elif block_type == 'x':
+            self.surf = pygame.image.load("assets/images/tree/tree13.png") 
+        elif block_type == 'a':
+            self.surf = pygame.image.load("assets/images/tree/tree14.png")               
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))        
 
@@ -719,7 +748,7 @@ class Game():
         pygame.init()
 
         self.bonus = Bonus(self)
-        self.numbers = list(range(1, 5))
+        self.numbers = list(range(1, 8))
         shuffle(self.numbers)
         self.x=self.numbers[:3]
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
@@ -784,6 +813,13 @@ class Game():
                 elif cell == '.':
                     new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
                     self.terrain_blocks.add(new_terrain_block)
+                elif cell == ',':
+                    new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
+                    self.terrain_blocks.add(new_terrain_block)  
+                elif cell == 'B':
+                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(new_brick)
+                    self.barriers.append((i, j))          
                 elif cell == '1':
                     house1 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.bricks.add(house1)
@@ -835,7 +871,23 @@ class Game():
                 elif cell == 'X':
                     tree4 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.bricks.add(tree4) 
-                    self.barriers.append((i, j))     
+                    self.barriers.append((i, j))  
+                elif cell == 't':
+                    tree11 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(tree11) 
+                    self.barriers.append((i, j))
+                elif cell == 'o':
+                    tree12 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(tree12) 
+                    self.barriers.append((i, j))
+                elif cell == 'a':
+                    tree13 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(tree13) 
+                    self.barriers.append((i, j))
+                elif cell == 'x':
+                    tree14 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(tree14) 
+                    self.barriers.append((i, j))                   
                 elif cell == 'W':
                     water1 = Water(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.bricks.add(water1)
@@ -874,7 +926,7 @@ class Game():
 
     def main(self):
         global index_level
-        pygame.mixer.music.load('assets/music/1_level.mp3')
+        pygame.mixer.music.load('assets/music/'+ str(index_level)+'_level.mp3')
         pygame.mixer.music.play(loops=-1)
         self.running = True # flag that show is game running or not
         pygame.event.set_grab(True)
@@ -968,6 +1020,7 @@ class Game():
                     pygame.mixer.Channel(2).pause()
                     for entity in self.bricks:
                         if entity.block_type == 'D ' or entity.block_type == 'd ':
+                            pygame.mixer.Channel(4).play(portal_sound)
                             self.bricks.remove(entity)
                 for entity in self.bullets:
                     if entity.x <= self.map.cols*self.map.cell_size:
