@@ -11,7 +11,7 @@ import random as rd
 import PIL
 from PIL import Image
 
-index_level = 3 # change the current level
+index_level = 1 # change the current level
 window = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 info_object = pygame.display.Info()
@@ -67,8 +67,6 @@ from pygame.locals import (
 
 class Menu:
     def __init__(self):
-        global index_level
-        self.tmp = index_level
         self.menu_point = None
         self.isFirstMenu = True
         self.isChangeLevel = False
@@ -134,32 +132,47 @@ class Menu:
         if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
             if self.menu_point == 0:
                 pygame.image.load('assets/images/Resize/loadingResize.png')
-                self.game = Game()
+                l = open("save/open_lvl.txt",'w') 
+                l.write(str(1))
+                l.close()
                 time.sleep(1)
+                self.game = Game()
                 self.game.main()
-                self.choose_level()
+                self.choose_next_level()
             elif self.menu_point == 1:
                 self.isChangeLevel = True
                 self.back_menu = self.get_resize_image('back_lvl', SCREEN_WIDTH, SCREEN_HEIGHT)
             elif self.menu_point == 2:
                 self.isFirstMenu = True
 
-    def choose_level(self):
+    def choose_next_level(self):
         global index_level
         pygame.image.load('assets/images/Resize/loadingResize.png')
-        if self.tmp != index_level:
+        r = open("save/open_lvl.txt", 'r')
+        tmp = int(r.readline())
+        if tmp != index_level:
+            index_level = tmp
             self.game = Game()
             self.game.main()
-            self.tmp = index_level
-            return self.choose_level()
-        
+            return self.choose_next_level()
+
+    def choose_user_level(self):
+        self.game = Game()
+        self.game.main()
+        return self.choose_next_level()
+
     def in_choise_lvl_menu(self, e, mp, font_menu):
+        global index_level
         if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1: 
             if mp[0]>86*constx and mp[0]<321*constx and mp[1]>290*consty and mp[1]<633*consty:
+                index_level = 1
                 self.game = Game()
+                time.sleep(1)
                 self.game.main()
+                self.choose_next_level()
             elif mp[0]>365*constx and mp[0]<571*constx and mp[1]>290*consty and mp[1]<633*consty:
-                print('2') 
+                index_level = 2
+                self.choose_user_level()
             elif mp[0]>=601*constx and mp[0]<803*constx and mp[1]>290*consty and mp[1]<633*consty:
                 print('3') 
             elif mp[0]>=841*constx and mp[0]<1032*constx and mp[1]>290*consty and mp[1]<633*consty:
@@ -227,7 +240,8 @@ class Bonus:
         self.image4.set_colorkey((255, 255, 255), RLEACCEL)                            
     
     def __del__(self):
-        print('Destructor called, Bonus deleted.')
+        pass
+        # print('Destructor called, Bonus deleted.')
 
     def get_resize_image(self, name_img, width, height):
         img = Image.open('assets/images/bonus/' + name_img + '.png')
@@ -271,12 +285,13 @@ class Bonus:
             self.game.player.player_speed = 7                                     
 
     def save_info(self,bonus):
-        b = open("save/bonus"+str(index_level)+".txt",'w') 
+        b = open("save/bonus_after_"+str(index_level)+"_lvl.txt",'w') 
         b.write(str(bonus))
         b.close()
-        l = open("save/open_lvl.txt",'w') 
-        l.write(str(index_level+1))
-        l.close()
+        if index_level <= 4: 
+            l = open("save/open_lvl.txt",'w')
+            l.write(str(index_level+1))
+            l.close()
 
     def bonus_image(self, x, image_bonus):
         self.x = x
@@ -310,7 +325,8 @@ class Mob(pygame.sprite.Sprite):
         self.path.reverse()
 
     def __del__(self):
-        print('Destructor called, Mob deleted.')
+        pass
+        # print('Destructor called, Mob deleted.')
 
     def update(self):
         # self.field.show()            
@@ -359,7 +375,8 @@ class Bullet(pygame.sprite.Sprite):
                         self.speed_y1 = (self.m_y - self.y) / l
 
     def __del__(self):
-        print('Destructor called, Bullet deleted.')
+        pass
+        # print('Destructor called, Bullet deleted.')
 
     def update(self):   
         self.x += self.speed * self.speed_x1
@@ -396,7 +413,8 @@ class Player(pygame.sprite.Sprite):
         self.state = 'WAIT'
 
     def __del__(self):
-        print('Destructor called, Player deleted.')
+        pass
+        # print('Destructor called, Player deleted.')
 
     def getPosition(self):
         return (self.rect.y // self.game.map.cell_size, \
@@ -508,15 +526,21 @@ class Pause():
     def __init__(self, game):
         self.game = game
 
+    def __del__(self):
+        pass
+
     def main(self, mp_x, mp_y, e):
         self.option = None 
         if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
             if mp_x>=168 * constx and mp_x<453 * constx and mp_y>340 * consty and mp_y<420 * consty:
                 self.game.paused = False 
             elif  mp_x>168 * constx and mp_x<453 * constx and mp_y>474 * consty and mp_y<538 * consty:
+                self.game.running = False
+                game = Game()
+                game.main()
                 print("начать заново")  
-            elif mp_x>168 * constx and mp_x<453 * constx and mp_y>595 * consty and mp_y<669 * consty:                          
-                print("выйти в меню")  
+            elif mp_x>168 * constx and mp_x<453 * constx and mp_y>595 * consty and mp_y<669 * consty: 
+                self.game.running = False                         
 
 class Camera():
     def __init__(self, x, y):
@@ -528,7 +552,8 @@ class Camera():
         self.inner_bound = 0.7
 
     def __del__(self):
-        print('Destructor called, Camera deleted.')
+        pass
+        # print('Destructor called, Camera deleted.')
 
     def follow(self, player, game_map):
         dx, dy = 0, 0
@@ -558,7 +583,8 @@ class Map():
         self.cell_size = 72
 
     def __del__(self):
-        print('Destructor called, Map deleted.')
+        pass
+        # print('Destructor called, Map deleted.')
 
     def load_from(self, filepath = 'assets/maps/map3.txt'):
         self.path = filepath
@@ -581,8 +607,9 @@ class Brick(pygame.sprite.Sprite):
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
 
-    # def __del__(self):
-    #     print('Destructor called, Brick deleted.')
+    def __del__(self):
+        pass
+        # print('Destructor called, Brick deleted.')
 
 class TerrainBlock(pygame.sprite.Sprite):
     def __init__(self, x, y, block_type = 1):
@@ -592,8 +619,9 @@ class TerrainBlock(pygame.sprite.Sprite):
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
 
-    # def __del__(self):
-    #     print('Destructor called, TerrBlock deleted.')
+    def __del__(self):
+        pass
+        # print('Destructor called, TerrBlock deleted.')
 
 class House(pygame.sprite.Sprite):
     def __init__(self, x, y, block_type):
@@ -607,7 +635,8 @@ class House(pygame.sprite.Sprite):
         self.rect = self.surf.get_rect(topleft = (x, y))
 
     def __del__(self):
-        print('Destructor called, House deleted.')
+        pass
+        # print('Destructor called, House deleted.')
 
 class Tree(pygame.sprite.Sprite):
     def __init__(self, x, y, block_type):
@@ -625,7 +654,8 @@ class Tree(pygame.sprite.Sprite):
         self.rect = self.surf.get_rect(topleft = (x, y))        
 
     def __del__(self):
-        print('Destructor called, Tree deleted.')
+        pass
+        # print('Destructor called, Tree deleted.')
 
 class Water(pygame.sprite.Sprite):
     def __init__(self, x, y, block_type):
@@ -639,7 +669,8 @@ class Water(pygame.sprite.Sprite):
         self.rect = self.surf.get_rect(topleft = (x, y)) 
 
     def __del__(self):
-        print('Destructor called, Water deleted.')
+        pass
+        # print('Destructor called, Water deleted.')
 
 class Portal(pygame.sprite.Sprite):
     def __init__(self, x, y, block_type = 1):
@@ -650,7 +681,8 @@ class Portal(pygame.sprite.Sprite):
         self.rect = self.surf.get_rect(topleft = (x, y))
 
     def __del__(self):
-        print('Destructor called, Portal deleted.')
+        pass
+        # print('Destructor called, Portal deleted.')
 
 class Door(pygame.sprite.Sprite):
     def __init__(self, x, y, block_type):
@@ -666,7 +698,8 @@ class Door(pygame.sprite.Sprite):
         self.rect = self.surf.get_rect(topleft = (x, y))
 
     def __del__(self):
-        print('Destructor called, Door deleted.')
+        pass
+        # print('Destructor called, Door deleted.')
 
 class Game():
     def __init__(self):
@@ -849,11 +882,13 @@ class Game():
         update_paths = pygame.USEREVENT + 1
         pygame.time.set_timer(update_paths, 3000)
         self.draw_map()
-        for i in range(1,index_level):
-            r = open("save/bonus"+ str(i)+".txt",'r')
+        
+        for i in range(1, index_level):
+            r = open("save/bonus_after_" + str(i) + "_lvl.txt", 'r')
             read_bonus = r.readline()
             read_bonus = int(read_bonus)
-            self.bonus.bonus_type(read_bonus)        
+            self.bonus.bonus_type(read_bonus)     
+
         self.init_cam()
         while self.player.health > 0 and self.running and index_level <= 4:   # this cicle defines health of our player
             self.clock.tick(self.FPS)                    # delay according to fps
@@ -910,7 +945,7 @@ class Game():
                                 self.bonus.run(self.x, event, *pygame.mouse.get_pos()) 
                             else:
                                 pygame.image.load('assets/images/Resize/loadingResize.png')
-                                index_level += 1
+                                # index_level += 1
                                 self.running = False
                                 pass
                             break
@@ -965,7 +1000,7 @@ class Game():
             self.screen.blit(self.font.render("Game over!", True, pygame.Color('white')), (self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2))
             print('0 hp - Game over!')
             self.running = False
-        # self.delete_all_objects()
+        self.delete_all_objects()
         # pygame.quit()
         # sys.exit()
 
