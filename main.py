@@ -11,6 +11,7 @@ import random as rd
 import PIL
 from PIL import Image
 
+index_level = 3 # change the current level
 window = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 info_object = pygame.display.Info()
@@ -24,8 +25,8 @@ else:
 
 # Add intro in game
 # pygame.display.set_caption('Intro')
-# intro = VideoFileClip('assets/videos/intro.mp4')
-# intro.preview()
+# intro = VideoFileClip('assets/videos/end.mp4')
+# intro.preview(fullscreen = True)
 
 pygame.init()
 shoot_sound = pygame.mixer.Sound('assets/sounds/shoot3.ogg')
@@ -44,7 +45,6 @@ buulet_to_brick_sound = pygame.mixer.Sound('assets/sounds/bullet_to_brick.ogg')
 
 notshoot_sound = pygame.mixer.Sound('assets/sounds/notshoot.ogg')
 reload_sound = pygame.mixer.Sound('assets/sounds/reload.ogg')
-
 
 from pygame.locals import (
     RLEACCEL,
@@ -67,6 +67,8 @@ from pygame.locals import (
 
 class Menu:
     def __init__(self):
+        global index_level
+        self.tmp = index_level
         self.menu_point = None
         self.isFirstMenu = True
         self.isChangeLevel = False
@@ -74,17 +76,18 @@ class Menu:
         self.back_menu = self.get_resize_image('background2', SCREEN_WIDTH, SCREEN_HEIGHT)
         self.level = self.get_resize_image('level1', math.ceil(214*constx), math.ceil(357*consty))
         self.block_level = self.get_resize_image('block_level1', math.ceil(214*constx), math.ceil(357*consty))
+        self.loading = self.get_resize_image('loading', SCREEN_WIDTH, SCREEN_HEIGHT)
         self.points_in_first_menu = [
-            (1085*constx, 600*consty, u'Играть', (250, 97, 3), (255, 165, 0), 0),
-            (1085*constx, 660*consty, u'Титры', (250, 97, 3), (255, 165, 0), 1),
-            (1085*constx, 720*consty, u'Выйти', (250, 97, 3), (255, 165, 0),  2)
+            (1070*constx, 600*consty, u'Играть', (250, 97, 3), (255, 165, 0), 0),
+            (1070*constx, 660*consty, u'Титры', (250, 97, 3), (255, 165, 0), 1),
+            (1070*constx, 720*consty, u'Выйти', (250, 97, 3), (255, 165, 0),  2)
         ]
         self.points_in_second_menu = [
-            (1085*constx, 600*consty, u'Новая игра', (250, 97, 3), (255, 165, 0), 0),
-            (1085*constx, 660*consty, u'Выбрать уровень', (250, 97, 3), (255, 165, 0), 1),
-            (1085*constx, 720*consty, u'Назад', (250, 97, 3), (255, 165, 0),  2)
+            (1070*constx, 600*consty, u'Новая игра', (250, 97, 3), (255, 165, 0), 0),
+            (1070*constx, 660*consty, u'Выбрать уровень', (250, 97, 3), (255, 165, 0), 1),
+            (1070*constx, 720*consty, u'Назад', (250, 97, 3), (255, 165, 0),  2)
         ]
-        self.backInChoiceLvl = [(1085*constx, 720*consty, u'Назад', (250, 97, 3), (255, 165, 0),  2)]
+        self.backInChoiceLvl = [(1070*constx, 720*consty, u'Назад', (250, 97, 3), (255, 165, 0),  2)]
 
     def __del__(self):
         print('Destructor called, Menu deleted.')
@@ -117,7 +120,7 @@ class Menu:
             if self.menu_point == 0:
                 self.isFirstMenu = False
             elif self.menu_point == 1:
-                print("Here will be the Titres")
+                print("Here will be the Titles")
                 sys.exit()
             elif self.menu_point == 2:
                 sys.exit()
@@ -130,14 +133,26 @@ class Menu:
                 self.isFirstMenu = True
         if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
             if self.menu_point == 0:
+                pygame.image.load('assets/images/Resize/loadingResize.png')
                 self.game = Game()
+                time.sleep(1)
                 self.game.main()
+                self.choose_level()
             elif self.menu_point == 1:
                 self.isChangeLevel = True
                 self.back_menu = self.get_resize_image('back_lvl', SCREEN_WIDTH, SCREEN_HEIGHT)
             elif self.menu_point == 2:
                 self.isFirstMenu = True
 
+    def choose_level(self):
+        global index_level
+        pygame.image.load('assets/images/Resize/loadingResize.png')
+        if self.tmp != index_level:
+            self.game = Game()
+            self.game.main()
+            self.tmp = index_level
+            return self.choose_level()
+        
     def in_choise_lvl_menu(self, e, mp, font_menu):
         if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1: 
             if mp[0]>86*constx and mp[0]<321*constx and mp[1]>290*consty and mp[1]<633*consty:
@@ -223,8 +238,6 @@ class Bonus:
     def run(self, x, e, mp_x, mp_y): 
         self.x = x
         pygame.key.set_repeat(0, 0)
-        font_menu = pygame.font.Font(None, 50)
-        mp = pygame.mouse.get_pos()
         self.bonus_vec = [0, 0, 0]
         Bonus.bonus_image(self, self.x, self.bonus_vec)
         screen.blit(self.bonus_vec[0], (120 * constx, 200 * consty))
@@ -486,7 +499,7 @@ class Pause():
 
     def main(self, mp_x, mp_y, e):
         self.option = None 
-        if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 :
+        if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
             if mp_x>=168 * constx and mp_x<453 * constx and mp_y>340 * consty and mp_y<420 * consty:
                 self.game.paused = False 
             elif  mp_x>168 * constx and mp_x<453 * constx and mp_y>474 * consty and mp_y<538 * consty:
@@ -557,8 +570,8 @@ class Brick(pygame.sprite.Sprite):
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
 
-    def __del__(self):
-        print('Destructor called, Brick deleted.')
+    # def __del__(self):
+    #     print('Destructor called, Brick deleted.')
 
 class TerrainBlock(pygame.sprite.Sprite):
     def __init__(self, x, y, block_type = 1):
@@ -568,8 +581,8 @@ class TerrainBlock(pygame.sprite.Sprite):
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
 
-    def __del__(self):
-        print('Destructor called, TerrBlock deleted.')
+    # def __del__(self):
+    #     print('Destructor called, TerrBlock deleted.')
 
 class House(pygame.sprite.Sprite):
     def __init__(self, x, y, block_type):
@@ -646,13 +659,14 @@ class Door(pygame.sprite.Sprite):
 
 class Game():
     def __init__(self):
+        global index_level
         surface = pygame.display.get_surface()
         self.SCREEN_WIDTH, self.SCREEN_HEIGHT = size = surface.get_width(), surface.get_height()
         self.FPS = 60
         self.barriers = []
         self.positionMobs = []
         self.map = Map()
-        self.map.load_from('assets/maps/map4.txt')
+        self.map.load_from('assets/maps/map' + str(index_level) + '.txt')
         self.running = False
         self.add_bonus_to_player = False
         self.isCollision_with_portal = False
@@ -815,6 +829,7 @@ class Game():
         self.camera = Camera(cam_x, cam_y)
 
     def main(self):
+        global index_level
         pygame.mixer.music.load('assets/music/1_level.mp3')
         pygame.mixer.music.play(loops=-1)
         self.running = True # flag that show is game running or not
@@ -824,7 +839,7 @@ class Game():
         pygame.time.set_timer(update_paths, 3000)
         self.draw_map()
         self.init_cam()
-        while self.player.health > 0 and self.running:   # this cicle defines health of our player
+        while self.player.health > 0 and self.running and index_level <= 4:   # this cicle defines health of our player
             self.clock.tick(self.FPS)                    # delay according to fps
 
             for event in pygame.event.get():             # check events
@@ -879,7 +894,10 @@ class Game():
                                 self.bonus.run(self.x, event, *pygame.mouse.get_pos()) 
                                 self.bonus.bonus_type(self.bonus.bonus)
                             else:
+                                pygame.image.load('assets/images/Resize/loadingResize.png')
+                                index_level += 1
                                 self.running = False
+                                pass
                             break
                         else:
                             self.screen.blit(entity.surf, (entity.rect.x - self.camera.x + SCREEN_WIDTH//2, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2))
@@ -932,7 +950,7 @@ class Game():
             self.screen.blit(self.font.render("Game over!", True, pygame.Color('white')), (self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2))
             print('0 hp - Game over!')
             self.running = False
-        self.delete_all_objects()
+        # self.delete_all_objects()
         # pygame.quit()
         # sys.exit()
 
