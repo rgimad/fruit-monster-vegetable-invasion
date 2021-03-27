@@ -169,6 +169,9 @@ class Menu:
         l = open("save/open_lvl.txt",'w') 
         l.write(str(index_level))
         l.close()
+        b = open("save/bonus_after_"+ str(index_level+1)+"_lvl.txt",'w') 
+        b.write("0")
+        b.close()
         if max_opened_level >= index_level:
             self.game = Game()
             self.game.main()
@@ -260,8 +263,10 @@ class Bonus:
         self.image6 = self.get_resize_image('bonus-6', math.ceil(315*constx), math.ceil(367*consty))
         self.image6.set_colorkey((255, 255, 255), RLEACCEL)   
         self.image7 = self.get_resize_image('bonus-7', math.ceil(315*constx), math.ceil(367*consty))
-        self.image7.set_colorkey((255, 255, 255), RLEACCEL)                        
-    
+        self.image7.set_colorkey((255, 255, 255), RLEACCEL)  
+        self.down = pygame.image.load('assets/images/Resize/loadingResize.png').convert()  
+
+
     def __del__(self):
         pass
         # print('Destructor called, Bonus deleted.')
@@ -277,24 +282,31 @@ class Bonus:
         pygame.key.set_repeat(0, 0)
         self.bonus_vec = [0, 0, 0]
         Bonus.bonus_image(self, self.x, self.bonus_vec)
-        screen.blit(self.bonus_vec[0], (120 * constx, 200 * consty))
-        screen.blit(self.bonus_vec[1], (520 * constx, 200 * consty))
-        screen.blit(self.bonus_vec[2], (920 * constx, 200 * consty))
-        screen.blit(self.lvl_text, (370 * constx, 110 * consty))  
+        if self.game.loading  == False:
+            screen.blit(self.bonus_vec[0], (120 * constx, 200 * consty))
+            screen.blit(self.bonus_vec[1], (520 * constx, 200 * consty))
+            screen.blit(self.bonus_vec[2], (920 * constx, 200 * consty))
+            screen.blit(self.lvl_text, (370 * constx, 110 * consty))  
         self.bonus = None      
         if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 :
             if mp_x >= 135 * constx and mp_x < 425 * constx and mp_y > 227 * consty and mp_y < 552 * consty:
-                self.bonus = self.x[0]    
+                self.bonus = self.x[0] 
+                self.game.loading  = True   
+                screen.blit(self.down, (0,0))  
                 self.game.add_bonus_to_player = True             
-                self.save_info(self.bonus)      
+                self.save_info(self.bonus)     
             elif mp_x > 527 * constx and mp_x < 822 * constx and mp_y > 227 * consty and mp_y < 552 * consty:
                 self.bonus = self.x[1]
-                self.game.add_bonus_to_player = True  
-                self.save_info(self.bonus)              
+                self.game.loading  = True  
+                screen.blit(self.down, (0,0)) 
+                self.game.add_bonus_to_player = True      
+                self.save_info(self.bonus)             
             elif mp_x > 952 * constx and mp_x < 1218 * constx and mp_y > 227 * consty and mp_y < 552 * consty:
                 self.bonus = self.x[2]
+                self.game.loading = True  
+                screen.blit(self.down, (0,0))  
                 self.game.add_bonus_to_player = True  
-                self.save_info(self.bonus)             
+                self.save_info(self.bonus)           
 
     def bonus_type(self, bonus):
         if bonus == 1:
@@ -309,7 +321,7 @@ class Bonus:
         if bonus == 5:
             print("заморозка")
         if bonus == 6:
-            print("яд")
+            self.game.poison = True
         if bonus == 7:
             print("щит")                               
 
@@ -352,7 +364,10 @@ class Mob(pygame.sprite.Sprite):
     def __init__(self, x, y, game):
         super(Mob, self).__init__()
         self.game = game
-        self.surf = pygame.image.load("assets/images/mob2.png").convert()
+        if index_level !=5:
+            self.surf = pygame.image.load("assets/images/mob2.png").convert()
+        else:
+            self.surf = pygame.image.load("assets/images/boss.png").convert()    
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
         # needs for lee algo
@@ -395,7 +410,10 @@ class Mob(pygame.sprite.Sprite):
             self.game.player.texture_collide(self.game.player.damage_of_mobs, self.game.player.damage_of_mobs)
             self.game.player.health -= 1
             pygame.mixer.Channel(1).play(collision_sound)
-            print("player mob collision")        
+            print("player mob collision")  
+            if self.game.poison == True:
+                if index_level != 5:
+                   self.kill() 
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, x1, y1, speed, game):
@@ -426,9 +444,10 @@ class Bullet(pygame.sprite.Sprite):
         self.y += self.speed * self.speed_y1
         self.rect.move_ip(0, self.speed_y1*self.speed)
         self.rect.move_ip(self.speed_x1*self.speed,0)   
-        if pygame.sprite.spritecollideany(self, self.game.bricks):  
-            self.kill()    
-            pygame.mixer.Channel(3).play(buulet_to_brick_sound) 
+        for entity in self.game.bricks:
+            if pygame.sprite.collide_rect(entity, self) and entity.block_type != 'W' and entity.block_type != 'H':
+                self.kill()    
+                pygame.mixer.Channel(3).play(buulet_to_brick_sound) 
         if pygame.sprite.groupcollide(self.game.mobs, self.game.bullets, True, True):
            pygame.mixer.Channel(1).play(rd.choice(damage_sound))
            self.kill()              
@@ -767,7 +786,9 @@ class Game():
         self.running = False
         self.add_bonus_to_player = False
         self.isCollision_with_portal = False
+        self.loading  = False
         self.paused = False
+        self.poison = False
         self.pause_image = self.get_resize_image('in_pause', SCREEN_WIDTH, SCREEN_HEIGHT)
         pygame.init()
 
@@ -1020,17 +1041,17 @@ class Game():
                         if pygame.sprite.collide_rect(entity, self.player) and entity.block_type == 'P':
                             self.isCollision_with_portal = True
                             self.player.state = "RELOADING"
-                            if not self.add_bonus_to_player:
-                                self.bonus.run(self.x, event, *pygame.mouse.get_pos()) 
+                            if not self.add_bonus_to_player :
+                                self.bonus.run(self.x, event, *pygame.mouse.get_pos())   
                             else:
-                                pygame.image.load('assets/images/Resize/loadingResize.png')
                                 # index_level += 1
                                 self.running = False
                                 pass
                             break
                         else:
-                            self.screen.blit(entity.surf, (entity.rect.x - self.camera.x + SCREEN_WIDTH//2, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2))
-                            self.isCollision_with_portal = False
+                            if self.loading  == False:
+                                self.screen.blit(entity.surf, (entity.rect.x - self.camera.x + SCREEN_WIDTH//2, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2))
+                                self.isCollision_with_portal = False
                     for entity in self.bricks:
                         if not self.isCollision_with_portal:
                             self.screen.blit(entity.surf, (entity.rect.x - self.camera.x + SCREEN_WIDTH//2, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2))
@@ -1039,7 +1060,8 @@ class Game():
                         self.screen.blit(entity.surf, (entity.rect.x - self.camera.x + SCREEN_WIDTH//2, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2))
                 self.isCollision_with_portal = False
                 # Draw the player on the screen
-                self.screen.blit(self.player.surf, (self.player.rect.x - self.camera.x + SCREEN_WIDTH//2, self.player.rect.y - self.camera.y + SCREEN_HEIGHT//2))
+                if self.loading  == False:  
+                     self.screen.blit(self.player.surf, (self.player.rect.x - self.camera.x + SCREEN_WIDTH//2, self.player.rect.y - self.camera.y + SCREEN_HEIGHT//2))
                 # Camera follows the player
                 self.camera.follow(self.player, self.map)
                 
@@ -1067,12 +1089,13 @@ class Game():
             health_image.set_colorkey((0, 0, 0), RLEACCEL)   
             bullet_image = pygame.image.load('assets/images/bullet.png').convert()
             bullet_image.set_colorkey((0, 0, 0), RLEACCEL)  
-            if not self.paused:               
-                self.screen.blit(health_image,(math.ceil(1150*constx),math.ceil(20)))
-                self.screen.blit(bullet_image,(math.ceil(1240*constx),math.ceil(20)))
-                self.screen.blit(fps, (math.ceil(40*constx),  40))
-                self.screen.blit(hl, (math.ceil(1173*constx*consth), 40))
-                self.screen.blit(bl, (math.ceil(1290*constx), 40))
+            if not self.paused: 
+                if self.loading  == False:              
+                    self.screen.blit(health_image,(math.ceil(1150*constx),math.ceil(20)))
+                    self.screen.blit(bullet_image,(math.ceil(1240*constx),math.ceil(20)))
+                    self.screen.blit(fps, (math.ceil(40*constx),  40))
+                    self.screen.blit(hl, (math.ceil(1173*constx*consth), 40))
+                    self.screen.blit(bl, (math.ceil(1290*constx), 40))
             # Update the display
             pygame.display.flip()
         # check status of player's health 
