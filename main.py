@@ -73,7 +73,9 @@ class Menu:
         self.isChangeLevel = False
         self.constPixel = 0
         self.back_menu = self.get_resize_image('background2', SCREEN_WIDTH, SCREEN_HEIGHT)
-        self.level = self.get_resize_image('level1', math.ceil(214*constx), math.ceil(357*consty))
+        self.level = [0, 0, 0, 0, 0]
+        for i in range(1, 4):
+            self.level[i] = self.get_resize_image('level'+ str(i), math.ceil(214*constx), math.ceil(357*consty)) 
         self.block_level = self.get_resize_image('block_level1', math.ceil(214*constx), math.ceil(357*consty))
         self.loading = self.get_resize_image('loading', SCREEN_WIDTH, SCREEN_HEIGHT)
         self.points_in_first_menu = [
@@ -136,6 +138,9 @@ class Menu:
                 l = open("save/open_lvl.txt",'w') 
                 l.write(str(1))
                 l.close()
+                max_f = open("save/max_opened_level.txt", 'w')
+                max_f.write(str(1))
+                max_f.close()
                 time.sleep(1)
                 self.game = Game()
                 self.game.main()
@@ -158,28 +163,35 @@ class Menu:
             return self.choose_next_level()
 
     def choose_user_level(self):
-        self.game = Game()
-        self.game.main()
-        return self.choose_next_level()
+        max_f = open("save/max_opened_level.txt", 'r')
+        max_opened_level = int(max_f.readline())
+        max_f.close()
+        l = open("save/open_lvl.txt",'w') 
+        l.write(str(index_level))
+        l.close()
+        if max_opened_level >= index_level:
+            self.game = Game()
+            self.game.main()
+            return self.choose_next_level()
 
     def in_choise_lvl_menu(self, e, mp, font_menu):
         global index_level
         if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1: 
             if mp[0]>86*constx and mp[0]<321*constx and mp[1]>290*consty and mp[1]<633*consty:
                 index_level = 1
-                self.game = Game()
-                time.sleep(1)
-                self.game.main()
-                self.choose_next_level()
+                self.choose_user_level()
             elif mp[0]>365*constx and mp[0]<571*constx and mp[1]>290*consty and mp[1]<633*consty:
                 index_level = 2
                 self.choose_user_level()
             elif mp[0]>=601*constx and mp[0]<803*constx and mp[1]>290*consty and mp[1]<633*consty:
-                print('3') 
+                index_level = 3
+                self.choose_user_level()
             elif mp[0]>=841*constx and mp[0]<1032*constx and mp[1]>290*consty and mp[1]<633*consty:
-                print('4')  
+                index_level = 4
+                self.choose_user_level()
             elif mp[0]>=1075*constx and mp[0]<1270*constx and mp[1]>290*consty and mp[1]<633*consty:
-                print('5')   
+                index_level = 5
+                self.choose_user_level()
             elif self.menu_point == 2:
                 self.back_menu = pygame.image.load('assets/images/Resize/background2Resize.png')
                 self.isChangeLevel = False
@@ -199,7 +211,11 @@ class Menu:
         font_menu = pygame.font.Font(None, 50)
         pygame.key.set_repeat(0,0)
         pygame.mouse.set_visible(True)
+
         while not done:
+            max_f = open("save/max_opened_level.txt", 'r')
+            max_opened_level = int(max_f.readline())
+            max_f.close()
             screen.blit(self.back_menu, (0, 0))
             mp = pygame.mouse.get_pos()
             if not self.isChangeLevel:
@@ -210,8 +226,8 @@ class Menu:
                     self.render(screen, font_menu, self.points_in_second_menu, self.menu_point)
                     self.get_menu_point(mp, self.points_in_second_menu)
             else:
-                screen.blit(self.level, (107*constx, 285*consty))
-                [screen.blit(self.block_level, (128*constx + 235*constx * (self.constPixel + 1), 285*consty)) for self.constPixel in range(4)]
+                [screen.blit(self.level[i], (107*constx + 235*constx * (i - 1), 285*consty)) for i in range(1, max_opened_level + 1)]
+                [screen.blit(self.block_level, (107*constx + 235*constx * (self.constPixel - 1), 285*consty)) for self.constPixel in range(max_opened_level + 1, 6)]
                 self.render(screen, font_menu, self.backInChoiceLvl, self.menu_point)
                 self.get_menu_point(mp, self.points_in_second_menu)
             for e in pygame.event.get():
@@ -297,14 +313,22 @@ class Bonus:
         if bonus == 7:
             print("щит")                               
 
-    def save_info(self,bonus):
-        b = open("save/bonus_after_"+str(index_level)+"_lvl.txt",'w') 
+    def save_info(self, bonus):
+        b = open("save/bonus_after_" + str(index_level) + "_lvl.txt", 'w') 
         b.write(str(bonus))
         b.close()
         if index_level <= 4: 
-            l = open("save/open_lvl.txt",'w')
-            l.write(str(index_level+1))
+            l = open("save/open_lvl.txt", 'w')
+            l.write(str(index_level + 1))
             l.close()
+        max_f = open("save/max_opened_level.txt", 'r')
+        max_opened_level = int(max_f.readline())
+        max_f.close()
+        if max_opened_level < index_level + 1:
+            max_f = open("save/max_opened_level.txt", 'w')
+            max_f.write(str(index_level + 1))
+            max_f.close()
+
 
     def bonus_image(self, x, image_bonus):
         self.x = x
@@ -634,8 +658,8 @@ class Brick(pygame.sprite.Sprite):
 
 class TerrainBlock(pygame.sprite.Sprite):
     def __init__(self, x, y, block_type = 1):
-        self.block_type = block_type
         super(TerrainBlock, self).__init__()
+        self.block_type = block_type
         self.surf = pygame.image.load("assets/images/gross" + str(index_level) + ".png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
@@ -814,7 +838,7 @@ class Game():
                     new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
                     self.terrain_blocks.add(new_terrain_block)
                 elif cell == "'":
-                    new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
                     self.terrain_blocks.add(new_terrain_block)
                 elif cell == ',':
                     new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
@@ -1056,6 +1080,7 @@ class Game():
             self.screen.blit(self.font.render("Game over!", True, pygame.Color('white')), (self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2))
             print('0 hp - Game over!')
             self.running = False
+            sys.exit()
         self.delete_all_objects()
         # pygame.quit()
         # sys.exit()
