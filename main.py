@@ -11,6 +11,8 @@ import random as rd
 import PIL
 from PIL import Image
 
+from const import *
+
 from Brick import Brick
 from TerrainBlock import TerrainBlock
 from House import House
@@ -37,23 +39,23 @@ else:
 # intro.preview(fullscreen = True)
 
 pygame.init()
-shoot_sound = pygame.mixer.Sound('assets/sounds/shoot3.ogg')
+shoot_sound = pygame.mixer.Sound(PATH_SND_SHOOT3)
 shoot_sound.set_volume(0.1)
 
 damage_sound = []
-for snd in ['assets/sounds/damage1.ogg', 'assets/sounds/damage2.ogg']:
+for snd in [PATH_SND_DAMAGE1, PATH_SND_DAMAGE2]:
     damage_sound.append(pygame.mixer.Sound(snd))
 
-rev_sound = pygame.mixer.Sound('assets/sounds/rev.ogg')
+rev_sound = pygame.mixer.Sound(PATH_SND_REV)
 rev_sound.set_volume(1.5)
 
-collision_sound = pygame.mixer.Sound('assets/sounds/collision.ogg')
+collision_sound = pygame.mixer.Sound(PATH_SND_COLLISION)
 
-buulet_to_brick_sound = pygame.mixer.Sound('assets/sounds/bullet_to_brick.ogg')
+buulet_to_brick_sound = pygame.mixer.Sound(PATH_SND_BULLET_TO_BRICK)
 
-notshoot_sound = pygame.mixer.Sound('assets/sounds/notshoot.ogg')
-reload_sound = pygame.mixer.Sound('assets/sounds/reload.ogg')
-portal_sound = pygame.mixer.Sound('assets/sounds/portal.ogg')
+notshoot_sound = pygame.mixer.Sound(PATH_SND_NOTSHOOT)
+reload_sound = pygame.mixer.Sound(PATH_SND_RELOAD)
+portal_sound = pygame.mixer.Sound(PATH_SND_PORTAL)
 
 from pygame.locals import (
     RLEACCEL,
@@ -146,7 +148,7 @@ class Menu:
                 l = open("save/open_lvl.txt",'w') 
                 l.write(str(1))
                 l.close()
-                max_f = open("save/max_opened_level.txt", 'w')
+                max_f = open(PATH_SAVE_MAX_OPENED_LVL, 'w')
                 max_f.write(str(1))
                 max_f.close()
                 time.sleep(1)
@@ -172,9 +174,9 @@ class Menu:
 
     def choose_user_level(self):
         try:
-            max_f = open("save/max_opened_level.txt", 'r')
+            max_f = open(PATH_SAVE_MAX_OPENED_LVL, 'r')
         except:
-            max_f = open("save/max_opened_level.txt", 'a+')
+            max_f = open(PATH_SAVE_MAX_OPENED_LVL, 'a+')
             max_f.write('1')
         max_opened_level = int(max_f.readline())
         max_f.close()
@@ -220,7 +222,7 @@ class Menu:
     def menu(self):
         done = False
         pygame.init()
-        pygame.mixer.music.load('assets/music/menu.mp3')
+        pygame.mixer.music.load(PATH_MUSIC_MENU)
         pygame.mixer.music.play(loops=-1)
 
         font_menu = pygame.font.Font(None, 50)
@@ -229,9 +231,9 @@ class Menu:
 
         while not done:
             try:
-                max_f = open("save/max_opened_level.txt", 'r')
+                max_f = open(PATH_SAVE_MAX_OPENED_LVL, 'r')
             except:
-                max_f = open("save/max_opened_level.txt", 'a+')
+                max_f = open(PATH_SAVE_MAX_OPENED_LVL, 'a+')
                 max_f.write('1')
             max_opened_level = int(max_f.readline())
             max_f.close()
@@ -350,14 +352,14 @@ class Bonus:
             l.write(str(index_level + 1))
             l.close()
         try:
-            max_f = open("save/max_opened_level.txt", 'r')
+            max_f = open(PATH_SAVE_MAX_OPENED_LVL, 'r')
         except:
-            max_f = open("save/max_opened_level.txt", 'a+')
+            max_f = open(PATH_SAVE_MAX_OPENED_LVL, 'a+')
             max_f.write('1')
         max_opened_level = int(max_f.readline())
         max_f.close()
         if max_opened_level < index_level + 1:
-            max_f = open("save/max_opened_level.txt", 'w')
+            max_f = open(PATH_SAVE_MAX_OPENED_LVL, 'w')
             max_f.write(str(index_level + 1))
             max_f.close()
 
@@ -385,9 +387,9 @@ class Mob(pygame.sprite.Sprite):
         super(Mob, self).__init__()
         self.game = game
         if index_level !=5:
-            self.surf = pygame.image.load("assets/images/mob2.png").convert()
+            self.surf = pygame.image.load(PATH_IMG_MOB).convert()
         else:
-            self.surf = pygame.image.load("assets/images/boss.png").convert()    
+            self.surf = pygame.image.load(PATH_IMG_BOSS).convert()    
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
         # needs for lee algo
@@ -438,7 +440,7 @@ class Mob(pygame.sprite.Sprite):
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, x1, y1, speed, game):
         super(Bullet, self).__init__()
-        self.bullet_img = pygame.image.load('assets/images/arrow.png').convert()
+        self.bullet_img = pygame.image.load(PATH_IMG_ARROW).convert()
         self.bullet_img.set_colorkey((255, 255, 255), RLEACCEL)
         self.game = game
         self.x = x  
@@ -479,8 +481,8 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, game, *groups):
         super(Player, self).__init__()
         self.game = game # reference to Game object in which player is playing
-        self.orig_img = pygame.image.load("assets/images/player2.png")
-        self.surf = pygame.image.load("assets/images/player2.png").convert()
+        self.orig_img = pygame.image.load(PATH_IMG_PLAYER)
+        self.surf = pygame.image.load(PATH_IMG_PLAYER).convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         # create rect from surface and set initial coords
         self.rect = self.surf.get_rect(topleft = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
@@ -992,9 +994,9 @@ class Game():
             fps = self.font.render('FPS: ' + str(int(self.clock.get_fps())), True, pygame.Color('white'))
             hl = self.font.render(str(self.player.health),True, pygame.Color('white'))
             bl = self.font.render(':'+ str(self.player.bullets_num)+'/'+str(self.player.bullets_num_max) , True, pygame.Color('white'))
-            health_image = pygame.image.load('assets/images/health.png').convert()
+            health_image = pygame.image.load(PATH_IMG_HEALTH).convert()
             health_image.set_colorkey((0, 0, 0), RLEACCEL)   
-            bullet_image = pygame.image.load('assets/images/bullet.png').convert()
+            bullet_image = pygame.image.load(PATH_IMG_BULLET).convert()
             bullet_image.set_colorkey((0, 0, 0), RLEACCEL)  
             if not self.paused: 
                 if self.loading  == False:              
