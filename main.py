@@ -459,10 +459,29 @@ class Bullet(pygame.sprite.Sprite):
             if pygame.sprite.collide_rect(entity, self) and entity.block_type != 'W' and entity.block_type != 'H':
                 self.kill()    
                 pygame.mixer.Channel(3).play(buulet_to_brick_sound) 
-        if pygame.sprite.groupcollide(self.game.mobs, self.game.bullets, True, True):
-           pygame.mixer.Channel(1).play(rd.choice(damage_sound))
-           self.kill()              
-           print("bullet killed mob")            
+        if index_level != 5:        
+            if pygame.sprite.groupcollide(self.game.mobs, self.game.bullets, True, True):
+                 pygame.mixer.Channel(1).play(rd.choice(damage_sound))
+                 self.kill()              
+                 print("bullet killed mob")     
+        else:
+            if self.game.boss_hp != 1:
+                if pygame.sprite.spritecollideany(self, self.game.mobs):
+                    self.kill()
+                    self.game.boss_hp -= 1   
+                    self.game.count_boss += 1  
+                    print(self.game.boss_hp)
+                    if self.game.count_boss == 25 :
+                        self.game.count_boss_speed += 5   
+                        self.game.animate_boss_hp += 1   
+                        self.game.count_boss = 0
+            else:
+                if pygame.sprite.groupcollide(self.game.mobs, self.game.bullets, True, True):
+                 pygame.mixer.Channel(1).play(rd.choice(damage_sound))
+                 self.kill()  
+                 self.game.animate_boss_hp = 5 
+
+                                                      
 
 # Define a player object by extending pygame.sprite.Sprite
 # The surface drawn on the screen is now an attribute of 'player'
@@ -687,6 +706,9 @@ class Game():
         self.loading  = False
         self.paused = False
         self.poison = False
+        self.boss_hp = 100
+        self.count_boss = 0
+        self.count_boss_speed = 0
         self.pause_image = self.get_resize_image('in_pause', SCREEN_WIDTH, SCREEN_HEIGHT)
         pygame.init()
 
@@ -703,6 +725,13 @@ class Game():
         self.bricks = pygame.sprite.Group()
         self.terrain_blocks = pygame.sprite.Group()
         self.all_sprites = pygame.sprite.Group()
+        self.animate_boss_hp = 1
+        self.boss_hp_image=[0, 0, 0, 0, 0, 0]
+        for i in range(1,6):
+            self.boss_hp_im = self.get_resize_image('boss_hp-'+str(i),450 , 130)
+            self.boss_hp_image[i] = pygame.image.load('assets/images/Resize/boss_hp-'+str(i)+'Resize.png').convert()
+            self.boss_hp_image[i].set_colorkey((255, 255, 255), RLEACCEL)
+        
 
     def __del__(self):
         print('Destructor called, Game deleted.')
@@ -1014,6 +1043,9 @@ class Game():
                     self.screen.blit(fps, (math.ceil(40*constx),  40))
                     self.screen.blit(hl, (math.ceil(1173*constx*consth), 40))
                     self.screen.blit(bl, (math.ceil(1290*constx), 40))
+                    if index_level == 5:
+                        i = self.animate_boss_hp
+                        self.screen.blit(self.boss_hp_image[i],(math.ceil(10),math.ceil(640 *consty)))
             # Update the display
             pygame.display.flip()
         # check status of player's health 
