@@ -84,7 +84,7 @@ class Menu:
         self.constPixel = 0
         self.back_menu = self.get_resize_image('background2', SCREEN_WIDTH, SCREEN_HEIGHT)
         self.level = [0, 0, 0, 0, 0]
-        for i in range(1, 4):
+        for i in range(1, 5):
             self.level[i] = self.get_resize_image('level'+ str(i), math.ceil(214*constx), math.ceil(357*consty)) 
         self.block_level = self.get_resize_image('block_level1', math.ceil(214*constx), math.ceil(357*consty))
         self.loading = self.get_resize_image('loading', SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -341,7 +341,7 @@ class Bonus:
         if bonus == 6:
             self.game.poison = True
         if bonus == 7:
-            print("щит")                               
+            self.game.player.bullet_size += 1                                
 
     def save_info(self, bonus):
         b = open("save/bonus_after_" + str(index_level) + "_lvl.txt", 'w') 
@@ -438,9 +438,9 @@ class Mob(pygame.sprite.Sprite):
                    self.kill() 
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, x1, y1, speed, game):
+    def __init__(self, x, y, x1, y1, speed,bullet_size, game):
         super(Bullet, self).__init__()
-        self.bullet_img = pygame.image.load(PATH_IMG_ARROW).convert()
+        self.bullet_img = pygame.image.load('assets/images/arrow' + str(bullet_size) + '.png').convert()
         self.bullet_img.set_colorkey((255, 255, 255), RLEACCEL)
         self.game = game
         self.x = x  
@@ -491,6 +491,7 @@ class Player(pygame.sprite.Sprite):
         self.health = 3
         self.player_speed = 5
         self.bullet_speed = 8
+        self.bullet_size = 1
         self.bullets_num_max = 15
         self.damage_of_mobs = 50
         self.bullets_num = self.bullets_num_max
@@ -583,7 +584,7 @@ class Player(pygame.sprite.Sprite):
             return
         if self.bullets_num >= 1:
             self.bullets_num -= 1
-            bullet = Bullet(self.rect.x + 15, self.rect.y + 15, self.dir_x, self.dir_y, self.bullet_speed, self.game)
+            bullet = Bullet(self.rect.x + 15, self.rect.y + 15, self.dir_x, self.dir_y, self.bullet_speed,self.bullet_size , self.game)
             self.game.bullets.add(bullet)
             pygame.mixer.Channel(0).play(shoot_sound)
         else:
@@ -776,7 +777,11 @@ class Game():
                 elif cell == 'B':
                     new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.bricks.add(new_brick)
-                    self.barriers.append((i, j))          
+                    self.barriers.append((i, j))  
+                elif cell == 'q':
+                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(new_brick)
+                    self.barriers.append((i, j))             
                 elif cell == '1':
                     house1 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.bricks.add(house1)
@@ -844,7 +849,23 @@ class Game():
                 elif cell == 'x':
                     tree14 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.bricks.add(tree14) 
-                    self.barriers.append((i, j))                   
+                    self.barriers.append((i, j))       
+                elif cell == 'l':
+                    tree21 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(tree21) 
+                    self.barriers.append((i, j))  
+                elif cell == 'k':
+                    tree22 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(tree22) 
+                    self.barriers.append((i, j))                 
+                elif cell == 'j':
+                    tree23 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(tree23) 
+                    self.barriers.append((i, j))                 
+                elif cell == 'u':
+                    tree24 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(tree24) 
+                    self.barriers.append((i, j))                                                                                            
                 elif cell == 'W':
                     water1 = Water(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.bricks.add(water1)

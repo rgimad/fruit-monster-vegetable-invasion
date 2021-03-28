@@ -11,6 +11,10 @@ from const import (
     PATH_IMG_TREE12,
     PATH_IMG_TREE13,
     PATH_IMG_TREE14,
+    PATH_IMG_TREE21,
+    PATH_IMG_TREE22,
+    PATH_IMG_TREE23,
+    PATH_IMG_TREE24,
 )
 
 class Tree(pygame.sprite.Sprite):
@@ -33,6 +37,14 @@ class Tree(pygame.sprite.Sprite):
             self.surf = pygame.image.load(PATH_IMG_TREE13)
         elif block_type == 'a':
             self.surf = pygame.image.load(PATH_IMG_TREE14)
+        elif block_type == 'l':
+            self.surf = pygame.image.load(PATH_IMG_TREE21)  
+        elif block_type == 'k':
+            self.surf = pygame.image.load(PATH_IMG_TREE22) 
+        elif block_type == 'j':
+            self.surf = pygame.image.load(PATH_IMG_TREE23) 
+        elif block_type == 'u':
+            self.surf = pygame.image.load(PATH_IMG_TREE24)               
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))        
 

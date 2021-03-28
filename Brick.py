@@ -12,7 +12,9 @@ class Brick(pygame.sprite.Sprite):
         elif block_type == '$':
             self.surf = pygame.image.load("assets/images/brick2.png").convert()
         elif block_type == 'B':
-            self.surf = pygame.image.load("assets/images/box.png").convert()     
+            self.surf = pygame.image.load("assets/images/box.png").convert()  
+        elif block_type == 'q':
+            self.surf = pygame.image.load("assets/images/ice.png").convert()        
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
 
