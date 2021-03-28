@@ -163,7 +163,11 @@ class Menu:
             return self.choose_next_level()
 
     def choose_user_level(self):
-        max_f = open("save/max_opened_level.txt", 'r')
+        try:
+            max_f = open("save/max_opened_level.txt", 'r')
+        except:
+            max_f = open("save/max_opened_level.txt", 'a+')
+            max_f.write('1')
         max_opened_level = int(max_f.readline())
         max_f.close()
         l = open("save/open_lvl.txt",'w') 
@@ -216,7 +220,11 @@ class Menu:
         pygame.mouse.set_visible(True)
 
         while not done:
-            max_f = open("save/max_opened_level.txt", 'r')
+            try:
+                max_f = open("save/max_opened_level.txt", 'r')
+            except:
+                max_f = open("save/max_opened_level.txt", 'a+')
+                max_f.write('1')
             max_opened_level = int(max_f.readline())
             max_f.close()
             screen.blit(self.back_menu, (0, 0))
@@ -333,7 +341,11 @@ class Bonus:
             l = open("save/open_lvl.txt", 'w')
             l.write(str(index_level + 1))
             l.close()
-        max_f = open("save/max_opened_level.txt", 'r')
+        try:
+            max_f = open("save/max_opened_level.txt", 'r')
+        except:
+            max_f = open("save/max_opened_level.txt", 'a+')
+            max_f.write('1')
         max_opened_level = int(max_f.readline())
         max_f.close()
         if max_opened_level < index_level + 1:
