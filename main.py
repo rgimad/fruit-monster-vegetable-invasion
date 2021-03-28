@@ -22,7 +22,6 @@ from Portal import Portal
 from Door import Door
 
 index_level = 1 # change the current level
-window = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 info_object = pygame.display.Info()
 SCREEN_WIDTH, SCREEN_HEIGHT = info_object.current_w, info_object.current_h
@@ -57,24 +56,8 @@ notshoot_sound = pygame.mixer.Sound(PATH_SND_NOTSHOOT)
 reload_sound = pygame.mixer.Sound(PATH_SND_RELOAD)
 portal_sound = pygame.mixer.Sound(PATH_SND_PORTAL)
 
-from pygame.locals import (
-    RLEACCEL,
-    K_UP,
-    K_DOWN,
-    K_LEFT,
-    K_RIGHT,
-    K_ESCAPE,
-    K_w,
-    K_a,
-    K_s,
-    K_d,
-    KEYDOWN,
-    QUIT,
-    K_SPACE,
-    K_m,
-    K_n,
-    K_r,
-)
+from pygame.locals import ( RLEACCEL, K_UP, K_DOWN, K_LEFT, K_RIGHT, K_ESCAPE,
+    K_w, K_a, K_s, K_d, KEYDOWN, QUIT, K_SPACE, K_m, K_n, K_r, )
 
 class Menu:
     def __init__(self):
@@ -176,8 +159,10 @@ class Menu:
         try:
             max_f = open(PATH_SAVE_MAX_OPENED_LVL, 'r')
         except:
-            max_f = open(PATH_SAVE_MAX_OPENED_LVL, 'a+')
+            max_f = open(PATH_SAVE_MAX_OPENED_LVL, 'w+')
             max_f.write('1')
+            max_f.flush()
+            max_f.seek(0)
         max_opened_level = int(max_f.readline())
         max_f.close()
         l = open("save/open_lvl.txt",'w') 
@@ -233,8 +218,10 @@ class Menu:
             try:
                 max_f = open(PATH_SAVE_MAX_OPENED_LVL, 'r')
             except:
-                max_f = open(PATH_SAVE_MAX_OPENED_LVL, 'a+')
+                max_f = open(PATH_SAVE_MAX_OPENED_LVL, 'w+')
                 max_f.write('1')
+                max_f.flush()
+                max_f.seek(0)
             max_opened_level = int(max_f.readline())
             max_f.close()
             screen.blit(self.back_menu, (0, 0))
@@ -354,8 +341,10 @@ class Bonus:
         try:
             max_f = open(PATH_SAVE_MAX_OPENED_LVL, 'r')
         except:
-            max_f = open(PATH_SAVE_MAX_OPENED_LVL, 'a+')
+            max_f = open(PATH_SAVE_MAX_OPENED_LVL, 'w+')
             max_f.write('1')
+            max_f.flush()
+            max_f.seek(0)
         max_opened_level = int(max_f.readline())
         max_f.close()
         if max_opened_level < index_level + 1:
@@ -681,7 +670,6 @@ class Map():
     def cell(self, row, col):
         return self.matrix[row][col]        
 
-# ..
 
 class Game():
     def __init__(self):
