@@ -82,7 +82,7 @@ class Menu:
         self.isFirstMenu = True
         self.isChangeLevel = False
         self.constPixel = 0
-        self.back_menu = self.get_resize_image('background2', SCREEN_WIDTH, SCREEN_HEIGHT)
+        self.back_menu = self.get_resize_image('background3', SCREEN_WIDTH, SCREEN_HEIGHT)
         self.level = [0, 0, 0, 0, 0]
         for i in range(1, 5):
             self.level[i] = self.get_resize_image('level'+ str(i), math.ceil(214*constx), math.ceil(357*consty)) 
