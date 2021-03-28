@@ -11,6 +11,14 @@ import random as rd
 import PIL
 from PIL import Image
 
+from Brick import Brick
+from TerrainBlock import TerrainBlock
+from House import House
+from Tree import Tree
+from Water import Water
+from Portal import Portal
+from Door import Door
+
 index_level = 1 # change the current level
 window = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
@@ -670,120 +678,7 @@ class Map():
     def cell(self, row, col):
         return self.matrix[row][col]        
 
-class Brick(pygame.sprite.Sprite):
-    def __init__(self, x, y, block_type):
-        super(Brick, self).__init__()
-        self.block_type = block_type
-        if block_type == '#':
-            self.surf = pygame.image.load("assets/images/stone1.png").convert()
-        elif block_type == '$':
-            self.surf = pygame.image.load("assets/images/brick2.png").convert()
-        elif block_type == 'B':
-            self.surf = pygame.image.load("assets/images/box.png").convert()     
-        self.surf.set_colorkey((255, 255, 255), RLEACCEL)
-        self.rect = self.surf.get_rect(topleft = (x, y))
-
-    def __del__(self):
-        pass
-        # print('Destructor called, Brick deleted.')
-
-class TerrainBlock(pygame.sprite.Sprite):
-    def __init__(self, x, y, block_type = 1):
-        super(TerrainBlock, self).__init__()
-        self.block_type = block_type
-        self.surf = pygame.image.load("assets/images/gross" + str(index_level) + ".png").convert()
-        self.surf.set_colorkey((255, 255, 255), RLEACCEL)
-        self.rect = self.surf.get_rect(topleft = (x, y))
-
-    def __del__(self):
-        pass
-        # print('Destructor called, TerrBlock deleted.')
-
-class House(pygame.sprite.Sprite):
-    def __init__(self, x, y, block_type):
-        super(House, self).__init__()
-        self.block_type = block_type
-        for i in range(0, 10):
-            if block_type == str(i):
-                st = "assets/images/house/house" + str(i) + ".png"
-                self.surf = pygame.image.load(st)
-        self.surf.set_colorkey((255, 255, 255), RLEACCEL)
-        self.rect = self.surf.get_rect(topleft = (x, y))
-
-    def __del__(self):
-        pass
-        # print('Destructor called, House deleted.')
-
-class Tree(pygame.sprite.Sprite):
-    def __init__(self, x, y, block_type):
-        super(Tree, self).__init__()
-        self.block_type = block_type
-        if block_type == 'T':
-            self.surf = pygame.image.load("assets/images/tree/tree1.png") 
-        elif block_type == 'O':
-            self.surf = pygame.image.load("assets/images/tree/tree2.png") 
-        elif block_type == 'X':
-            self.surf = pygame.image.load("assets/images/tree/tree3.png") 
-        elif block_type == 'A':
-            self.surf = pygame.image.load("assets/images/tree/tree4.png")     
-        elif block_type == 't':
-            self.surf = pygame.image.load("assets/images/tree/tree11.png") 
-        elif block_type == 'o':
-            self.surf = pygame.image.load("assets/images/tree/tree12.png") 
-        elif block_type == 'x':
-            self.surf = pygame.image.load("assets/images/tree/tree13.png") 
-        elif block_type == 'a':
-            self.surf = pygame.image.load("assets/images/tree/tree14.png")               
-        self.surf.set_colorkey((255, 255, 255), RLEACCEL)
-        self.rect = self.surf.get_rect(topleft = (x, y))        
-
-    def __del__(self):
-        pass
-        # print('Destructor called, Tree deleted.')
-
-class Water(pygame.sprite.Sprite):
-    def __init__(self, x, y, block_type):
-        super(Water, self).__init__()
-        self.block_type = block_type
-        if block_type == 'W':
-            self.surf = pygame.image.load("assets/images/water/water3.png") 
-        elif block_type == 'H':
-            self.surf = pygame.image.load("assets/images/water/water4.png")           
-        self.surf.set_colorkey((255, 255, 255), RLEACCEL)
-        self.rect = self.surf.get_rect(topleft = (x, y)) 
-
-    def __del__(self):
-        pass
-        # print('Destructor called, Water deleted.')
-
-class Portal(pygame.sprite.Sprite):
-    def __init__(self, x, y, block_type = 1):
-        super(Portal, self).__init__()
-        self.block_type = block_type
-        self.surf = pygame.image.load("assets/images/portal1.png").convert()
-        self.surf.set_colorkey((255, 255, 255), RLEACCEL)
-        self.rect = self.surf.get_rect(topleft = (x, y))
-
-    def __del__(self):
-        pass
-        # print('Destructor called, Portal deleted.')
-
-class Door(pygame.sprite.Sprite):
-    def __init__(self, x, y, block_type):
-        super(Door, self).__init__()
-        self.block_type = block_type
-        if block_type == 'D':
-            self.surf = pygame.image.load("assets/images/open_door1.png").convert()
-        elif block_type == 'd':
-            self.surf = pygame.image.load("assets/images/open_door2.png").convert()
-        else:
-            self.surf = pygame.image.load("assets/images/closed_door.png").convert()
-        self.surf.set_colorkey((255, 255, 255), RLEACCEL)
-        self.rect = self.surf.get_rect(topleft = (x, y))
-
-    def __del__(self):
-        pass
-        # print('Destructor called, Door deleted.')
+# ..
 
 class Game():
     def __init__(self):
@@ -868,13 +763,13 @@ class Game():
                     self.bricks.add(new_brick)
                     self.barriers.append((i, j))
                 elif cell == '.':
-                    new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
+                    new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size, 1, index_level)
                     self.terrain_blocks.add(new_terrain_block)
                 elif cell == "'":
-                    new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
+                    new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size, 1, index_level)
                     self.terrain_blocks.add(new_terrain_block)
                 elif cell == ',':
-                    new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
+                    new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size, 1, index_level)
                     self.terrain_blocks.add(new_terrain_block)  
                 elif cell == 'B':
                     new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
@@ -967,12 +862,12 @@ class Game():
                     self.terrain_blocks.add(portal)
                 elif cell == '!': # Create a player - Sprite
                     self.player = Player(self, self.all_sprites)
-                    new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
+                    new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size, 1, index_level)
                     self.all_sprites.add(self.player)
                     self.terrain_blocks.add(new_terrain_block)
                 elif cell == '@':
                     self.positionMobs.append((i, j))
-                    new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size)
+                    new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size, 1, index_level)
                     self.terrain_blocks.add(new_terrain_block)                            
                 else:
                     print('map error: incorrect cell type', cell)                  
