@@ -30,7 +30,8 @@ consth = 1.00682012 if constx == 1 else 1
 
 # Add intro in game
 # pygame.display.set_caption('Intro')
-# intro = VideoFileClip('assets/videos/end.mp4')
+# intro = VideoFileClip('assets/videos/introo.mp4')
+# end = VideoFileClip('assets/videos/end.mp4')
 # intro.preview(fullscreen = True)
 
 pygame.init()
@@ -713,6 +714,8 @@ class Game():
         self.loading  = False
         self.paused = False
         self.poison = False
+        self.isWaveOfMobs = False
+        self.wave_amount = 2
         self.boss_hp = 200
         self.count_boss = 0
         self.count_boss_speed = 0
@@ -778,186 +781,187 @@ class Game():
         #print(self.getPosition(), self.game.player.getPosition())
 
     def draw_map(self):
-        for i in range(self.map.rows):
-            for j in range(self.map.cols):
-                cell = self.map.cell(i, j)
-                if cell == '#':
-                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(new_brick)
-                    self.barriers.append((i, j))
-                elif cell == '$':
-                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(new_brick)
-                    self.barriers.append((i, j))
-                elif cell == '*':
-                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(new_brick)
-                    self.barriers.append((i, j))
-                elif cell == '&':
-                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(new_brick)
-                    self.barriers.append((i, j))
-                elif cell == '<':
-                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(new_brick)
-                    self.barriers.append((i, j))
-                elif cell == '>':
-                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(new_brick)
-                    self.barriers.append((i, j))
-                elif cell == '{':
-                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(new_brick)
-                    self.barriers.append((i, j))
-                elif cell == '}':
-                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(new_brick)
-                    self.barriers.append((i, j))
-                elif cell == '?':
-                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(new_brick)
-                    self.barriers.append((i, j))
-                elif cell == ';':
-                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(new_brick)
-                    self.barriers.append((i, j))
-                elif cell == '^':
-                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(new_brick)
-                    self.barriers.append((i, j))
-                elif cell == '-':
-                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(new_brick)
-                    self.barriers.append((i, j))
-                elif cell == '.':
-                    new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size, 1, index_level)
-                    self.terrain_blocks.add(new_terrain_block)
-                elif cell == "'":
-                    new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size, 1, index_level)
-                    self.terrain_blocks.add(new_terrain_block)
-                elif cell == ',':
-                    new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size, 1, index_level)
-                    self.terrain_blocks.add(new_terrain_block)  
-                elif cell == 'B':
-                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(new_brick)
-                    self.barriers.append((i, j))  
-                elif cell == 'q':
-                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(new_brick)
-                    self.barriers.append((i, j))             
-                elif cell == '1':
-                    house1 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(house1)
-                    self.barriers.append((i, j))
-                elif cell == '2':
-                    house2 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(house2)    
-                    self.barriers.append((i, j))
-                elif cell == '3':
-                    house3 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(house3)  
-                    self.barriers.append((i, j))       
-                elif cell == '4':
-                    house4 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(house4)     
-                    self.barriers.append((i, j))           
-                elif cell == '5':
-                    house5 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(house5)  
-                    self.barriers.append((i, j))
-                elif cell == '6':
-                    house6 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(house6)  
-                    self.barriers.append((i, j))
-                elif cell == '7':
-                    most1 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.terrain_blocks.add(most1)  
-                elif cell == '8':
-                    most2 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.terrain_blocks.add(most2)     
-                elif cell == '9':
-                    most3 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.terrain_blocks.add(most3)  
-                elif cell == '0':
-                    most4 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.terrain_blocks.add(most4) 
-                elif cell == 'T':
-                    tree1 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(tree1) 
-                    self.barriers.append((i, j))
-                elif cell == 'O':
-                    tree2 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(tree2) 
-                    self.barriers.append((i, j))
-                elif cell == 'A':
-                    tree3 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(tree3) 
-                    self.barriers.append((i, j))
-                elif cell == 'X':
-                    tree4 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(tree4) 
-                    self.barriers.append((i, j))  
-                elif cell == 't':
-                    tree11 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(tree11) 
-                    self.barriers.append((i, j))
-                elif cell == 'o':
-                    tree12 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(tree12) 
-                    self.barriers.append((i, j))
-                elif cell == 'a':
-                    tree13 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(tree13) 
-                    self.barriers.append((i, j))
-                elif cell == 'x':
-                    tree14 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(tree14) 
-                    self.barriers.append((i, j))       
-                elif cell == 'l':
-                    tree21 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(tree21) 
-                    self.barriers.append((i, j))  
-                elif cell == 'k':
-                    tree22 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(tree22) 
-                    self.barriers.append((i, j))                 
-                elif cell == 'j':
-                    tree23 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(tree23) 
-                    self.barriers.append((i, j))                 
-                elif cell == 'u':
-                    tree24 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(tree24) 
-                    self.barriers.append((i, j))                                                                                            
-                elif cell == 'W':
-                    water1 = Water(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(water1)
-                    self.barriers.append((i, j))     
-                elif cell == 'H':
-                    water2 = Water(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.bricks.add(water2)  
-                    self.barriers.append((i, j))          
-                elif cell == 'D' or cell == 'd':
-                    door = Door(j*self.map.cell_size, i*self.map.cell_size, cell + " ", index_level)
-                    self.bricks.add(door)
-                    self.barriers.append((i, j))
-                    open_door = Door(j*self.map.cell_size, i*self.map.cell_size, cell, index_level)
-                    self.terrain_blocks.add(open_door)
-                elif cell == 'P':
-                    portal = Portal(j*self.map.cell_size, i*self.map.cell_size, cell)
-                    self.terrain_blocks.add(portal)
-                elif cell == '!': # Create a player - Sprite
-                    self.player = Player(self, self.all_sprites)
-                    new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size, 1, index_level)
-                    self.all_sprites.add(self.player)
-                    self.terrain_blocks.add(new_terrain_block)
-                elif cell == '@':
-                    self.positionMobs.append((i, j))
-                    new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size, 1, index_level)
-                    self.terrain_blocks.add(new_terrain_block)                            
-                else:
-                    print('map error: incorrect cell type', cell)                  
+        if not self.isWaveOfMobs:
+            for i in range(self.map.rows):
+                for j in range(self.map.cols):
+                    cell = self.map.cell(i, j)
+                    if cell == '#':
+                        new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(new_brick)
+                        self.barriers.append((i, j))
+                    elif cell == '$':
+                        new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(new_brick)
+                        self.barriers.append((i, j))
+                    elif cell == '*':
+                        new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(new_brick)
+                        self.barriers.append((i, j))
+                    elif cell == '&':
+                        new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(new_brick)
+                        self.barriers.append((i, j))
+                    elif cell == '<':
+                        new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(new_brick)
+                        self.barriers.append((i, j))
+                    elif cell == '>':
+                        new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(new_brick)
+                        self.barriers.append((i, j))
+                    elif cell == '{':
+                        new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(new_brick)
+                        self.barriers.append((i, j))
+                    elif cell == '}':
+                        new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(new_brick)
+                        self.barriers.append((i, j))
+                    elif cell == '?':
+                        new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(new_brick)
+                        self.barriers.append((i, j))
+                    elif cell == ';':
+                        new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(new_brick)
+                        self.barriers.append((i, j))
+                    elif cell == '^':
+                        new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(new_brick)
+                        self.barriers.append((i, j))
+                    elif cell == '-':
+                        new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(new_brick)
+                        self.barriers.append((i, j))
+                    elif cell == '.':
+                        new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size, 1, index_level)
+                        self.terrain_blocks.add(new_terrain_block)
+                    elif cell == "'":
+                        new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size, 1, index_level)
+                        self.terrain_blocks.add(new_terrain_block)
+                    elif cell == ',':
+                        new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size, 1, index_level)
+                        self.terrain_blocks.add(new_terrain_block)  
+                    elif cell == 'B':
+                        new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(new_brick)
+                        self.barriers.append((i, j))  
+                    elif cell == 'q':
+                        new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(new_brick)
+                        self.barriers.append((i, j))             
+                    elif cell == '1':
+                        house1 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(house1)
+                        self.barriers.append((i, j))
+                    elif cell == '2':
+                        house2 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(house2)    
+                        self.barriers.append((i, j))
+                    elif cell == '3':
+                        house3 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(house3)  
+                        self.barriers.append((i, j))       
+                    elif cell == '4':
+                        house4 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(house4)     
+                        self.barriers.append((i, j))           
+                    elif cell == '5':
+                        house5 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(house5)  
+                        self.barriers.append((i, j))
+                    elif cell == '6':
+                        house6 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(house6)  
+                        self.barriers.append((i, j))
+                    elif cell == '7':
+                        most1 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.terrain_blocks.add(most1)  
+                    elif cell == '8':
+                        most2 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.terrain_blocks.add(most2)     
+                    elif cell == '9':
+                        most3 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.terrain_blocks.add(most3)  
+                    elif cell == '0':
+                        most4 = House(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.terrain_blocks.add(most4) 
+                    elif cell == 'T':
+                        tree1 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(tree1) 
+                        self.barriers.append((i, j))
+                    elif cell == 'O':
+                        tree2 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(tree2) 
+                        self.barriers.append((i, j))
+                    elif cell == 'A':
+                        tree3 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(tree3) 
+                        self.barriers.append((i, j))
+                    elif cell == 'X':
+                        tree4 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(tree4) 
+                        self.barriers.append((i, j))  
+                    elif cell == 't':
+                        tree11 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(tree11) 
+                        self.barriers.append((i, j))
+                    elif cell == 'o':
+                        tree12 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(tree12) 
+                        self.barriers.append((i, j))
+                    elif cell == 'a':
+                        tree13 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(tree13) 
+                        self.barriers.append((i, j))
+                    elif cell == 'x':
+                        tree14 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(tree14) 
+                        self.barriers.append((i, j))       
+                    elif cell == 'l':
+                        tree21 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(tree21) 
+                        self.barriers.append((i, j))  
+                    elif cell == 'k':
+                        tree22 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(tree22) 
+                        self.barriers.append((i, j))                 
+                    elif cell == 'j':
+                        tree23 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(tree23) 
+                        self.barriers.append((i, j))                 
+                    elif cell == 'u':
+                        tree24 = Tree(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(tree24) 
+                        self.barriers.append((i, j))                                                                                            
+                    elif cell == 'W':
+                        water1 = Water(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(water1)
+                        self.barriers.append((i, j))     
+                    elif cell == 'H':
+                        water2 = Water(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.bricks.add(water2)  
+                        self.barriers.append((i, j))          
+                    elif cell == 'D' or cell == 'd':
+                        door = Door(j*self.map.cell_size, i*self.map.cell_size, cell + " ", index_level)
+                        self.bricks.add(door)
+                        self.barriers.append((i, j))
+                        open_door = Door(j*self.map.cell_size, i*self.map.cell_size, cell, index_level)
+                        self.terrain_blocks.add(open_door)
+                    elif cell == 'P':
+                        portal = Portal(j*self.map.cell_size, i*self.map.cell_size, cell)
+                        self.terrain_blocks.add(portal)
+                    elif cell == '!': # Create a player - Sprite
+                        self.player = Player(self, self.all_sprites)
+                        new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size, 1, index_level)
+                        self.all_sprites.add(self.player)
+                        self.terrain_blocks.add(new_terrain_block)
+                    elif cell == '@':
+                        self.positionMobs.append((i, j))
+                        new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size, 1, index_level)
+                        self.terrain_blocks.add(new_terrain_block)                            
+                    else:
+                        print('map error: incorrect cell type', cell)                  
         for mobPos in self.positionMobs:
             new_mob = Mob(mobPos[1]*self.map.cell_size, mobPos[0]*self.map.cell_size, self)
             self.mobs.add(new_mob)
@@ -975,6 +979,9 @@ class Game():
         # create own event - reload to build next path in alg Lee for mobs
         update_paths = pygame.USEREVENT + 1
         pygame.time.set_timer(update_paths, 3000)
+        
+        update_wave_of_mobs = pygame.USEREVENT + 2
+        pygame.time.set_timer(update_wave_of_mobs, 15000)
         self.draw_map()
         
         for i in range(1, index_level):
@@ -1015,6 +1022,11 @@ class Game():
                     self.running = False
                 elif event.type == update_paths:
                     self.mobs_path_to_player()
+                elif event.type == update_wave_of_mobs and self.wave_amount > 0 and index_level != 5:
+                    self.isWaveOfMobs = True
+                    print('Hello, new Wave')
+                    self.draw_map() # without classic objects, only spawn of mobs
+                    self.wave_amount -= 1
 
             # Get all the keys currently pressed
             pressed_keys = pygame.key.get_pressed()
@@ -1035,7 +1047,10 @@ class Game():
                         if pygame.sprite.collide_rect(entity, self.player) and entity.block_type == 'P':
                             self.isCollision_with_portal = True
                             self.player.state = "RELOADING"
-                            if not self.add_bonus_to_player :
+                            if not self.add_bonus_to_player:
+                                if index_level == 5:
+                                    end.preview(fullscreen = True)
+                                    sys.exit()
                                 self.bonus.run(self.x, event, *pygame.mouse.get_pos())   
                             else:
                                 # index_level += 1
@@ -1059,7 +1074,7 @@ class Game():
                 # Camera follows the player
                 self.camera.follow(self.player, self.map)
                 
-                if len(self.mobs.sprites()) == 0:
+                if len(self.mobs.sprites()) == 0 and self.wave_amount == 0:
                     pygame.mixer.Channel(2).pause()
                     for entity in self.bricks:
                         if entity.block_type == 'D ' or entity.block_type == 'd ':
