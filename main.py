@@ -6,7 +6,7 @@ import threading
 import time
 import numpy as np
 from random import shuffle
-from moviepy.editor import VideoFileClip # library to add video in proj
+# from moviepy.editor import VideoFileClip # library to add video in proj
 import LeeMovement as lee
 import random as rd
 import PIL
@@ -22,8 +22,6 @@ from Water import Water
 from Portal import Portal
 from Door import Door
 
-#
-
 index_level = 1 # change the current level
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 info_object = pygame.display.Info()
@@ -35,11 +33,11 @@ if not os.path.exists('save'):
     os.makedirs('save')
 
 # Add intro in game
-pygame.display.set_caption('Intro')
-intro = VideoFileClip('assets/videos/introo.mp4', target_resolution=(SCREEN_HEIGHT, SCREEN_WIDTH))
-end = VideoFileClip('assets/videos/end.mp4', target_resolution=(SCREEN_HEIGHT, SCREEN_WIDTH))
-intro.preview(fullscreen = True)
-intro.close()
+# pygame.display.set_caption('Intro')
+# intro = VideoFileClip('assets/videos/introo.mp4', target_resolution=(SCREEN_HEIGHT, SCREEN_WIDTH))
+# end = VideoFileClip('assets/videos/end.mp4', target_resolution=(SCREEN_HEIGHT, SCREEN_WIDTH))
+# intro.preview(fullscreen = True)
+# intro.close()
 
 pygame.init()
 shoot_sound = pygame.mixer.Sound(PATH_SND_SHOOT3)
@@ -78,9 +76,10 @@ class Menu:
             self.level[i] = self.get_resize_image('level'+ str(i + 1), math.ceil(214*constx), math.ceil(357*consty)) 
         self.block_level = self.get_resize_image('block_level1', math.ceil(214*constx), math.ceil(357*consty))
         self.loading = self.get_resize_image('loading', SCREEN_WIDTH, SCREEN_HEIGHT)
+        self.back_info = self.get_resize_image('back_info', SCREEN_WIDTH, SCREEN_HEIGHT)
         self.points_in_first_menu = [
             (1070*constx, 600*consty, u'Играть', (250, 97, 3), (255, 165, 0), 0),
-            (1070*constx, 660*consty, u'Титры', (250, 97, 3), (255, 165, 0), 1),
+            (1070*constx, 660*consty, u'Управление', (250, 97, 3), (255, 165, 0), 1),
             (1070*constx, 720*consty, u'Выйти', (250, 97, 3), (255, 165, 0),  2)
         ]
         self.points_in_second_menu = [
@@ -111,7 +110,7 @@ class Menu:
             else:
                 self.menu_point = None
                 
-    def in_first_menu(self, e, mp, font_menu):
+    def in_first_menu(self, e, mp):
         if e.type == pygame.QUIT:
             sys.exit()
         if e.type == pygame.KEYDOWN:
@@ -121,13 +120,13 @@ class Menu:
             if self.menu_point == 0:
                 self.isFirstMenu = False
             elif self.menu_point == 1:
-                end.preview(fullscreen = True)
-                end.close()
-                #sys.exit()
+                self.isFirstMenu = False
+                self.isInfo = True
+                self.back_menu = pygame.image.load('assets/images/Resize/back_infoResize.png')
             elif self.menu_point == 2:
                 sys.exit()
     
-    def in_second_menu(self, e, mp, font_menu):
+    def in_second_menu(self, e, mp):
         if e.type == pygame.QUIT:
             sys.exit()
         if e.type == pygame.KEYDOWN:
@@ -151,6 +150,20 @@ class Menu:
                 self.back_menu = self.get_resize_image('back_lvl', SCREEN_WIDTH, SCREEN_HEIGHT)
             elif self.menu_point == 2:
                 self.isFirstMenu = True
+
+    def menu_info(self, e, mp):
+        if e.type == pygame.QUIT:
+            sys.exit()
+        if e.type == pygame.KEYDOWN:
+            if e.key == pygame.K_ESCAPE:
+                self.back_menu = pygame.image.load('assets/images/Resize/background3Resize.png')
+                self.isFirstMenu = True
+                self.isInfo = False
+        if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1: 
+            if self.menu_point == 2:
+                self.back_menu = pygame.image.load('assets/images/Resize/background3Resize.png')
+                self.isFirstMenu = True
+                self.isInfo = False
 
     def choose_next_level(self):
         global index_level
@@ -176,7 +189,7 @@ class Menu:
         l = open(PATH_SAVE_OPEN_LVL,'w')
         l.write(str(index_level))
         l.close()
-        b = open("save/bonus_after_"+ str(index_level+1)+"_lvl.txt",'w') 
+        b = open("save/bonus_after_"+ str(index_level + 1) +"_lvl.txt",'w') 
         b.write("0")
         b.close()
         if max_opened_level >= index_level:
@@ -184,7 +197,7 @@ class Menu:
             self.game.main()
             return self.choose_next_level()
 
-    def in_choise_lvl_menu(self, e, mp, font_menu):
+    def in_choise_lvl_menu(self, e, mp):
         global index_level
         if e.type == pygame.QUIT:
             sys.exit()
@@ -244,6 +257,9 @@ class Menu:
                 if self.isFirstMenu:
                     self.render(screen, font_menu, self.points_in_first_menu, self.menu_point)
                     self.get_menu_point(mp, self.points_in_first_menu)
+                elif not self.isFirstMenu and self.isInfo:
+                    self.render(screen, font_menu, self.backInChoiceLvl, self.menu_point)
+                    self.get_menu_point(mp, self.points_in_second_menu)
                 else:
                     self.render(screen, font_menu, self.points_in_second_menu, self.menu_point)
                     self.get_menu_point(mp, self.points_in_second_menu)
@@ -255,11 +271,13 @@ class Menu:
             for e in pygame.event.get():
                 if not self.isChangeLevel:
                     if self.isFirstMenu:
-                        self.in_first_menu(e, mp, font_menu)
+                        self.in_first_menu(e, mp)
+                    elif not self.isFirstMenu and self.isInfo:
+                        self.menu_info(e, mp)
                     else:
-                        self.in_second_menu(e, mp, font_menu)
+                        self.in_second_menu(e, mp)
                 else:
-                    self.in_choise_lvl_menu(e, mp, font_menu)
+                    self.in_choise_lvl_menu(e, mp)
                     
             pygame.display.flip()
 
