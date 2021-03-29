@@ -2,16 +2,18 @@ import pygame
 from pygame.locals import (
     RLEACCEL,
 )
-from const import PATH_IMG_OPEN_DOOR1, PATH_IMG_OPEN_DOOR2, PATH_IMG_CLOSED_DOOR
+from const import PATH_IMG_OPEN_DOOR1, PATH_IMG_OPEN_DOOR2, PATH_IMG_CLOSED_DOOR, PATH_IMG_CLOSED_DOOR5
 
 class Door(pygame.sprite.Sprite):
-    def __init__(self, x, y, block_type):
+    def __init__(self, x, y, block_type, index_level):
         super(Door, self).__init__()
         self.block_type = block_type
         if block_type == 'D':
             self.surf = pygame.image.load(PATH_IMG_OPEN_DOOR1).convert()
         elif block_type == 'd':
             self.surf = pygame.image.load(PATH_IMG_OPEN_DOOR2).convert()
+        elif index_level == 5:
+            self.surf = pygame.image.load(PATH_IMG_CLOSED_DOOR5).convert()
         else:
             self.surf = pygame.image.load(PATH_IMG_CLOSED_DOOR).convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)

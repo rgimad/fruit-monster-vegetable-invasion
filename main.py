@@ -63,8 +63,8 @@ class Menu:
         self.constPixel = 0
         self.back_menu = self.get_resize_image('background3', SCREEN_WIDTH, SCREEN_HEIGHT)
         self.level = [0, 0, 0, 0, 0]
-        for i in range(1, 5):
-            self.level[i] = self.get_resize_image('level'+ str(i), math.ceil(214*constx), math.ceil(357*consty)) 
+        for i in range(5):
+            self.level[i] = self.get_resize_image('level'+ str(i + 1), math.ceil(214*constx), math.ceil(357*consty)) 
         self.block_level = self.get_resize_image('block_level1', math.ceil(214*constx), math.ceil(357*consty))
         self.loading = self.get_resize_image('loading', SCREEN_WIDTH, SCREEN_HEIGHT)
         self.points_in_first_menu = [
@@ -174,6 +174,12 @@ class Menu:
 
     def in_choise_lvl_menu(self, e, mp, font_menu):
         global index_level
+        if e.type == pygame.QUIT:
+            sys.exit()
+        if e.type == pygame.KEYDOWN:
+            if e.key == pygame.K_ESCAPE:
+                self.back_menu = pygame.image.load('assets/images/Resize/background2Resize.png')
+                self.isChangeLevel = False
         if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1: 
             if mp[0]>86*constx and mp[0]<321*constx and mp[1]>290*consty and mp[1]<633*consty:
                 index_level = 1
@@ -230,8 +236,8 @@ class Menu:
                     self.render(screen, font_menu, self.points_in_second_menu, self.menu_point)
                     self.get_menu_point(mp, self.points_in_second_menu)
             else:
-                [screen.blit(self.level[i], (107*constx + 235*constx * (i - 1), 285*consty)) for i in range(1, max_opened_level + 1)]
-                [screen.blit(self.block_level, (107*constx + 235*constx * (self.constPixel - 1), 285*consty)) for self.constPixel in range(max_opened_level + 1, 6)]
+                [screen.blit(self.level[i], (107*constx + 235*constx * (i), 285*consty)) for i in range(0, max_opened_level)]
+                [screen.blit(self.block_level, (107*constx + 235*constx * (self.constPixel - 1), 285*consty)) for self.constPixel in range(max_opened_level, 5)]
                 self.render(screen, font_menu, self.backInChoiceLvl, self.menu_point)
                 self.get_menu_point(mp, self.points_in_second_menu)
             for e in pygame.event.get():
@@ -371,7 +377,7 @@ class Mob(pygame.sprite.Sprite):
     def __init__(self, x, y, game):
         super(Mob, self).__init__()
         self.game = game
-        if index_level !=5:
+        if index_level != 5:
             self.surf = pygame.image.load(PATH_IMG_MOB).convert()
         else:
             self.surf = pygame.image.load(PATH_IMG_BOSS).convert()    
@@ -720,10 +726,10 @@ class Game():
         self.terrain_blocks = pygame.sprite.Group()
         self.all_sprites = pygame.sprite.Group()
         self.animate_boss_hp = 1
-        self.boss_hp_image=[0, 0, 0, 0, 0, 0]
-        for i in range(1,6):
-            self.boss_hp_im = self.get_resize_image('boss_hp-'+str(i),450 , 130)
-            self.boss_hp_image[i] = pygame.image.load('assets/images/Resize/boss_hp-'+str(i)+'Resize.png').convert()
+        self.boss_hp_image = [0, 0, 0, 0, 0, 0]
+        for i in range(1, 6):
+            self.boss_hp_im = self.get_resize_image('boss_hp-'+ str(i), 450, 130)
+            self.boss_hp_image[i] = pygame.image.load('assets/images/Resize/boss_hp-' + str(i) + 'Resize.png').convert()
             self.boss_hp_image[i].set_colorkey((255, 255, 255), RLEACCEL)
         
 
@@ -773,6 +779,38 @@ class Game():
                     self.bricks.add(new_brick)
                     self.barriers.append((i, j))
                 elif cell == '$':
+                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(new_brick)
+                    self.barriers.append((i, j))
+                elif cell == '*':
+                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(new_brick)
+                    self.barriers.append((i, j))
+                elif cell == '&':
+                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(new_brick)
+                    self.barriers.append((i, j))
+                elif cell == '<':
+                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(new_brick)
+                    self.barriers.append((i, j))
+                elif cell == '>':
+                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(new_brick)
+                    self.barriers.append((i, j))
+                elif cell == '{':
+                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(new_brick)
+                    self.barriers.append((i, j))
+                elif cell == '}':
+                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(new_brick)
+                    self.barriers.append((i, j))
+                elif cell == '?':
+                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(new_brick)
+                    self.barriers.append((i, j))
+                elif cell == ';':
                     new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.bricks.add(new_brick)
                     self.barriers.append((i, j))
@@ -886,10 +924,10 @@ class Game():
                     self.bricks.add(water2)  
                     self.barriers.append((i, j))          
                 elif cell == 'D' or cell == 'd':
-                    door = Door(j*self.map.cell_size, i*self.map.cell_size, cell + " ")
+                    door = Door(j*self.map.cell_size, i*self.map.cell_size, cell + " ", index_level)
                     self.bricks.add(door)
                     self.barriers.append((i, j))
-                    open_door = Door(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    open_door = Door(j*self.map.cell_size, i*self.map.cell_size, cell, index_level)
                     self.terrain_blocks.add(open_door)
                 elif cell == 'P':
                     portal = Portal(j*self.map.cell_size, i*self.map.cell_size, cell)
@@ -931,7 +969,7 @@ class Game():
             self.bonus.bonus_type(read_bonus)     
 
         self.init_cam()
-        while self.player.health > 0 and self.running and index_level <= 4:   # this cicle defines health of our player
+        while self.player.health > 0 and self.running and index_level <= 5:   # this cicle defines health of our player
             self.clock.tick(self.FPS)                    # delay according to fps
 
             for event in pygame.event.get():             # check events
