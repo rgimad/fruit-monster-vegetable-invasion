@@ -5,7 +5,7 @@ import threading
 import time
 import numpy as np
 from random import shuffle
-# from moviepy.editor import VideoFileClip # library to add video in proj
+from moviepy.editor import VideoFileClip # library to add video in proj
 import LeeMovement as lee
 import random as rd
 import PIL
@@ -21,18 +21,18 @@ from Water import Water
 from Portal import Portal
 from Door import Door
 
+# Add intro in game
+pygame.display.set_caption('Intro')
+intro = VideoFileClip('assets/videos/introo.mp4')
+end = VideoFileClip('assets/videos/end.mp4')
+intro.preview(fullscreen = True)
+
 index_level = 1 # change the current level
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 info_object = pygame.display.Info()
 SCREEN_WIDTH, SCREEN_HEIGHT = info_object.current_w, info_object.current_h
 constx, consty = SCREEN_WIDTH / 1366, SCREEN_HEIGHT / 768
 consth = 1.00682012 if constx == 1 else 1
-
-# Add intro in game
-# pygame.display.set_caption('Intro')
-# intro = VideoFileClip('assets/videos/introo.mp4')
-# end = VideoFileClip('assets/videos/end.mp4')
-# intro.preview(fullscreen = True)
 
 pygame.init()
 shoot_sound = pygame.mixer.Sound(PATH_SND_SHOOT3)
@@ -715,7 +715,10 @@ class Game():
         self.paused = False
         self.poison = False
         self.isWaveOfMobs = False
-        self.wave_amount = 2
+        if index_level == 5:
+            self.wave_amount = 0
+        else:
+            self.wave_amount = 2
         self.boss_hp = 200
         self.count_boss = 0
         self.count_boss_speed = 0
