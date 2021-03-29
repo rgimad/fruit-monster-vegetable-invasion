@@ -25,12 +25,8 @@ index_level = 1 # change the current level
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 info_object = pygame.display.Info()
 SCREEN_WIDTH, SCREEN_HEIGHT = info_object.current_w, info_object.current_h
-constx = SCREEN_WIDTH / 1366
-consty = SCREEN_HEIGHT / 768
-if constx == 1:
-    consth = 1.00682012
-else:
-    consth = 1
+constx, consty = SCREEN_WIDTH / 1366, SCREEN_HEIGHT / 768
+consth = 1.00682012 if constx == 1 else 1
 
 # Add intro in game
 # pygame.display.set_caption('Intro')
@@ -127,8 +123,8 @@ class Menu:
                 self.isFirstMenu = True
         if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
             if self.menu_point == 0:
-                pygame.image.load('assets/images/Resize/loadingResize.png')
-                l = open("save/open_lvl.txt",'w') 
+                pygame.image.load(PATH_IMG_RESIZE_LOADING)
+                l = open(PATH_SAVE_OPEN_LVL,'w') 
                 l.write(str(1))
                 l.close()
                 max_f = open(PATH_SAVE_MAX_OPENED_LVL, 'w')
@@ -146,8 +142,8 @@ class Menu:
 
     def choose_next_level(self):
         global index_level
-        pygame.image.load('assets/images/Resize/loadingResize.png')
-        r = open("save/open_lvl.txt", 'r')
+        pygame.image.load(PATH_IMG_RESIZE_LOADING)
+        r = open(PATH_SAVE_OPEN_LVL, 'r')
         tmp = int(r.readline())
         if tmp != index_level:
             index_level = tmp
@@ -165,7 +161,7 @@ class Menu:
             max_f.seek(0)
         max_opened_level = int(max_f.readline())
         max_f.close()
-        l = open("save/open_lvl.txt",'w') 
+        l = open(PATH_SAVE_OPEN_LVL,'w')
         l.write(str(index_level))
         l.close()
         b = open("save/bonus_after_"+ str(index_level+1)+"_lvl.txt",'w') 
@@ -199,10 +195,10 @@ class Menu:
                 self.isChangeLevel = False
     
     def get_resize_image(self, name_img, width, height):
-        img = Image.open('assets/images/' + name_img + '.png')
+        img = Image.open(PATH_IMG_DIR + name_img + '.png')
         img = img.resize((width, height), PIL.Image.ANTIALIAS)
-        img.save('assets/images/Resize/' + name_img + 'Resize.png')
-        return pygame.image.load('assets/images/Resize/' + name_img + 'Resize.png').convert()
+        img.save(PATH_IMG_RESIZE_DIR + name_img + 'Resize.png')
+        return pygame.image.load(PATH_IMG_RESIZE_DIR + name_img + 'Resize.png').convert()
             
     def menu(self):
         done = False
@@ -269,7 +265,7 @@ class Bonus:
         self.image6.set_colorkey((255, 255, 255), RLEACCEL)   
         self.image7 = self.get_resize_image('bonus-7', math.ceil(315*constx), math.ceil(367*consty))
         self.image7.set_colorkey((255, 255, 255), RLEACCEL)  
-        self.down = pygame.image.load('assets/images/Resize/loadingResize.png').convert()  
+        self.down = pygame.image.load(PATH_IMG_RESIZE_LOADING).convert()  
 
 
     def __del__(self):
@@ -277,10 +273,10 @@ class Bonus:
         # print('Destructor called, Bonus deleted.')
 
     def get_resize_image(self, name_img, width, height):
-        img = Image.open('assets/images/bonus/' + name_img + '.png')
+        img = Image.open(PATH_IMG_BONUS_DIR + name_img + '.png')
         img = img.resize((width, height), PIL.Image.ANTIALIAS)
-        img.save('assets/images/Resize/' + name_img + 'Resize.png')
-        return pygame.image.load('assets/images/Resize/' + name_img + 'Resize.png').convert()
+        img.save(PATH_IMG_RESIZE_DIR + name_img + 'Resize.png')
+        return pygame.image.load(PATH_IMG_RESIZE_DIR + name_img + 'Resize.png').convert()
 
     def run(self, x, e, mp_x, mp_y): 
         self.x = x
@@ -335,7 +331,7 @@ class Bonus:
         b.write(str(bonus))
         b.close()
         if index_level <= 4: 
-            l = open("save/open_lvl.txt", 'w')
+            l = open(PATH_SAVE_OPEN_LVL, 'w')
             l.write(str(index_level + 1))
             l.close()
         try:
@@ -480,7 +476,6 @@ class Bullet(pygame.sprite.Sprite):
                  pygame.mixer.Channel(1).play(rd.choice(damage_sound))
                  self.kill()  
                  self.game.animate_boss_hp = 5 
-
                                                       
 
 # Define a player object by extending pygame.sprite.Sprite
@@ -615,7 +610,6 @@ class Player(pygame.sprite.Sprite):
             x.start()
 
 class Pause():
-
     def __init__(self, game):
         self.game = game
 
@@ -737,10 +731,10 @@ class Game():
         print('Destructor called, Game deleted.')
 
     def get_resize_image(self, name_img, width, height):
-        img = Image.open('assets/images/' + name_img + '.png')
+        img = Image.open(PATH_IMG_DIR + name_img + '.png')
         img = img.resize((width, height), PIL.Image.ANTIALIAS)
-        img.save('assets/images/Resize/' + name_img + 'Resize.png')
-        return pygame.image.load('assets/images/Resize/' + name_img + 'Resize.png').convert()
+        img.save(PATH_IMG_RESIZE_DIR + name_img + 'Resize.png')
+        return pygame.image.load(PATH_IMG_RESIZE_DIR + name_img + 'Resize.png').convert()
 
     def delete_all_objects(self):
         del self.bonus
@@ -1021,14 +1015,10 @@ class Game():
                 for entity in self.bullets:
                     if entity.x <= self.map.cols*self.map.cell_size:
                         screen.blit(entity.bullet_img, (entity.rect.x - self.camera.x + SCREEN_WIDTH//2, entity.rect.y - self.camera.y + SCREEN_HEIGHT//2))
-                # Draw the laser
-                #pygame.draw.line(self.screen, (0, 30, 225), 
-                #        [self.player.rect.x + 36, self.player.rect.y + 38], 
-                #        [self.player.rect.x + 300*self.player.dir_x, self.player.rect.y + 300*self.player.dir_y], 2)
             else:
                 pause = Pause(self)
                 pause.main(*pygame.mouse.get_pos(),event)
-            # Draw fps ounter
+            # Draw fps counter
             fps = self.font.render('FPS: ' + str(int(self.clock.get_fps())), True, pygame.Color('white'))
             hl = self.font.render(str(self.player.health),True, pygame.Color('white'))
             bl = self.font.render(':'+ str(self.player.bullets_num)+'/'+str(self.player.bullets_num_max) , True, pygame.Color('white'))

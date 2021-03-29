@@ -10,6 +10,10 @@ PATH_SND_PORTAL = 'assets/sounds/portal.ogg'
 
 PATH_MUSIC_MENU = 'assets/music/menu.mp3'
 
+PATH_IMG_DIR = 'assets/images/'
+PATH_IMG_RESIZE_DIR = 'assets/images/Resize/'
+PATH_IMG_RESIZE_LOADING = 'assets/images/Resize/loadingResize.png'
+PATH_IMG_BONUS_DIR = 'assets/images/bonus/'
 PATH_IMG_PLAYER = 'assets/images/player2.png'
 PATH_IMG_MOB = 'assets/images/mob2.png'
 PATH_IMG_BOSS = 'assets/images/boss.png'
@@ -40,3 +44,4 @@ PATH_IMG_BOX = 'assets/images/box.png'
 PATH_IMG_ICE = 'assets/images/ice.png'
 
 PATH_SAVE_MAX_OPENED_LVL = 'save/max_opened_level.txt'
+PATH_SAVE_OPEN_LVL = 'save/open_lvl.txt'
