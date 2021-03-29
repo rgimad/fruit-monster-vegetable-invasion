@@ -128,6 +128,7 @@ class Menu:
                 sys.exit()
     
     def in_second_menu(self, e, mp):
+        global index_level
         if e.type == pygame.QUIT:
             sys.exit()
         if e.type == pygame.KEYDOWN:
@@ -136,6 +137,7 @@ class Menu:
         if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
             if self.menu_point == 0:
                 pygame.image.load(PATH_IMG_RESIZE_LOADING)
+                index_level = 1
                 l = open(PATH_SAVE_OPEN_LVL,'w') 
                 l.write(str(1))
                 l.close()
@@ -788,6 +790,10 @@ class Game():
     def delete_all_objects(self):
         del self.bonus
         del self.map
+        self.mobs.empty()
+        self.bullets.empty()
+        self.bricks.empty()
+        self.terrain_blocks.empty()
         for mob in self.mobs:
             del mob
         for bullet in self.bullets:
@@ -1024,7 +1030,7 @@ class Game():
             self.bonus.bonus_type(read_bonus)     
 
         self.init_cam()
-        while self.player.health > 0 and self.running and index_level <= 5:   # this cicle defines health of our player
+        while self.player.health >  1 and self.running and index_level <= 5:   # this cicle defines health of our player
             self.clock.tick(self.FPS)                    # delay according to fps
 
             for event in pygame.event.get():             # check events
@@ -1139,14 +1145,13 @@ class Game():
                         self.screen.blit(self.boss_hp_image[i],(math.ceil(10),math.ceil(640 *consty)))
             # Update the display
             pygame.display.flip()
+
         # check status of player's health 
         if self.player.health <= 0:
-            self.screen.blit(self.font.render("Game over!", True, pygame.Color('white')), (self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2))
-            print('0 hp - Game over!')
-            self.running = False
+           print("0 hp - Game over!")
+           self.running = False
         self.delete_all_objects()
-        # pygame.quit()
-        # sys.exit()
+
 
 pygame.font.init()     
 
