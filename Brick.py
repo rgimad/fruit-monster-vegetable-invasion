@@ -7,7 +7,8 @@ from const import PATH_IMG_STONE1, PATH_IMG_BRICK2, PATH_IMG_BOX, \
      PATH_IMG_ICE, PATH_IMG_WERT_WALL, PATH_IMG_HOR_WALL, \
          PATH_IMG_ANGLE_LEFT_UP_WALL, PATH_IMG_ANGLE_RIGHT_UP_WALL, \
              PATH_IMG_ANGLE_LEFT_DOWN_WALL, PATH_IMG_ANGLE_RIGHT_DOWN_WALL, \
-                 PATH_IMG_TEXTURE_MOB, PATH_IMG_TEXTURE_MOB_DOWN
+                 PATH_IMG_TEXTURE_MOB, PATH_IMG_TEXTURE_MOB_DOWN, PATH_IMG_TEXTURE_MOB_RIGHT, \
+                     PATH_IMG_TEXTURE_MOB_UP
              
 
 class Brick(pygame.sprite.Sprite):
@@ -38,6 +39,10 @@ class Brick(pygame.sprite.Sprite):
             self.surf = pygame.image.load(PATH_IMG_TEXTURE_MOB).convert()
         elif block_type == ';':
             self.surf = pygame.image.load(PATH_IMG_TEXTURE_MOB_DOWN).convert()
+        elif block_type == '^':
+            self.surf = pygame.image.load(PATH_IMG_TEXTURE_MOB_UP).convert()
+        elif block_type == '-':
+            self.surf = pygame.image.load(PATH_IMG_TEXTURE_MOB_RIGHT).convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(topleft = (x, y))
 

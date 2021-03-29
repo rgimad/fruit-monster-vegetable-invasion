@@ -178,7 +178,7 @@ class Menu:
             sys.exit()
         if e.type == pygame.KEYDOWN:
             if e.key == pygame.K_ESCAPE:
-                self.back_menu = pygame.image.load('assets/images/Resize/background2Resize.png')
+                self.back_menu = pygame.image.load('assets/images/Resize/background3Resize.png')
                 self.isChangeLevel = False
         if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1: 
             if mp[0]>86*constx and mp[0]<321*constx and mp[1]>290*consty and mp[1]<633*consty:
@@ -197,7 +197,7 @@ class Menu:
                 index_level = 5
                 self.choose_user_level()
             elif self.menu_point == 2:
-                self.back_menu = pygame.image.load('assets/images/Resize/background2Resize.png')
+                self.back_menu = pygame.image.load('assets/images/Resize/background3Resize.png')
                 self.isChangeLevel = False
     
     def get_resize_image(self, name_img, width, height):
@@ -236,8 +236,8 @@ class Menu:
                     self.render(screen, font_menu, self.points_in_second_menu, self.menu_point)
                     self.get_menu_point(mp, self.points_in_second_menu)
             else:
-                [screen.blit(self.level[i], (107*constx + 235*constx * (i), 285*consty)) for i in range(0, max_opened_level)]
-                [screen.blit(self.block_level, (107*constx + 235*constx * (self.constPixel - 1), 285*consty)) for self.constPixel in range(max_opened_level, 5)]
+                [screen.blit(self.level[i], (107*constx + 235*constx * (i), 285*consty)) for i in range(max_opened_level)]
+                [screen.blit(self.block_level, (107*constx + 235*constx * (self.constPixel - 1), 285*consty)) for self.constPixel in range(max_opened_level + 1, 6)]
                 self.render(screen, font_menu, self.backInChoiceLvl, self.menu_point)
                 self.get_menu_point(mp, self.points_in_second_menu)
             for e in pygame.event.get():
@@ -811,6 +811,14 @@ class Game():
                     self.bricks.add(new_brick)
                     self.barriers.append((i, j))
                 elif cell == ';':
+                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(new_brick)
+                    self.barriers.append((i, j))
+                elif cell == '^':
+                    new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
+                    self.bricks.add(new_brick)
+                    self.barriers.append((i, j))
+                elif cell == '-':
                     new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
                     self.bricks.add(new_brick)
                     self.barriers.append((i, j))
