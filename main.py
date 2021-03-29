@@ -69,6 +69,7 @@ class Menu:
         self.menu_point = None
         self.isFirstMenu = True
         self.isChangeLevel = False
+        self.isInfo = False
         self.constPixel = 0
         self.back_menu = self.get_resize_image('background3', SCREEN_WIDTH, SCREEN_HEIGHT)
         self.level = [0, 0, 0, 0, 0]
@@ -356,7 +357,7 @@ class Bonus:
         if bonus == 4:
             self.game.player.player_speed += 1       
         if bonus == 5:
-            print("заморозка")
+            self.game.player.reload_speed /= 1.5
         if bonus == 6:
             self.game.poison = True
         if bonus == 7:
@@ -434,6 +435,8 @@ class Mob(pygame.sprite.Sprite):
         # print('Destructor called, Mob deleted.')
 
     def update(self):
+
+        self.speed = 3 + index_level + self.game.count_boss_speed
         # self.field.show()            
         if self.path_point < len(self.path):
             if self.cur_step_len > 0:
@@ -537,6 +540,7 @@ class Player(pygame.sprite.Sprite):
         self.bullet_size = 1
         self.bullets_num_max = 15
         self.damage_of_mobs = 50
+        self.reload_speed = 1
         self.bullets_num = self.bullets_num_max
         self.state = 'WAIT'
 
@@ -640,7 +644,7 @@ class Player(pygame.sprite.Sprite):
                 if self.bullets_num == self.bullets_num_max:
                     break
                 self.bullets_num = min(self.bullets_num_max, self.bullets_num + 5)
-                time.sleep(1)
+                time.sleep(1*self.reload_speed)
             self.state = 'WAIT'
 
         x = threading.Thread(target=reload_bullets, args=(self,))
@@ -1140,7 +1144,6 @@ class Game():
             self.screen.blit(self.font.render("Game over!", True, pygame.Color('white')), (self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2))
             print('0 hp - Game over!')
             self.running = False
-            sys.exit()
         self.delete_all_objects()
         # pygame.quit()
         # sys.exit()
