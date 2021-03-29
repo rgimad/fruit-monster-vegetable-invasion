@@ -44,6 +44,9 @@ for snd in [PATH_SND_DAMAGE1, PATH_SND_DAMAGE2]:
 rev_sound = pygame.mixer.Sound(PATH_SND_REV)
 rev_sound.set_volume(1.5)
 
+boss_sound = pygame.mixer.Sound(PATH_SND_BOSS)
+boss_sound.set_volume(1.5)
+
 collision_sound = pygame.mixer.Sound(PATH_SND_COLLISION)
 
 buulet_to_brick_sound = pygame.mixer.Sound(PATH_SND_BULLET_TO_BRICK)
@@ -385,10 +388,14 @@ class Mob(pygame.sprite.Sprite):
         self.rect = self.surf.get_rect(topleft = (x, y))
         # needs for lee algo
         self.mob_position = (y // self.game.map.cell_size, x // self.game.map.cell_size)
-        pygame.mixer.Channel(2).play(rev_sound, -1)
+        if index_level !=5:
+            pygame.mixer.Channel(2).play(rev_sound, -1)
+        else:
+            pygame.mixer.Channel(2).play(boss_sound, -1)
+
         self.path_point = 1
         self.cur_step_len = self.game.map.cell_size
-        self.speed = 3 + index_level 
+        self.speed = 3 + index_level + self.game.count_boss_speed
         self.field = lee.Field(self.game.map.rows, self.game.map.cols, self.mob_position, \
                                 self.game.player.getPosition(), self.game.barriers)
         self.field.emit()
@@ -427,6 +434,7 @@ class Mob(pygame.sprite.Sprite):
             if self.game.poison == True:
                 if index_level != 5:
                    self.kill() 
+            print(self.speed)       
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, x1, y1, speed,bullet_size, game):
@@ -472,9 +480,8 @@ class Bullet(pygame.sprite.Sprite):
                     self.kill()
                     self.game.boss_hp -= 1   
                     self.game.count_boss += 1  
-                    print(self.game.boss_hp)
-                    if self.game.count_boss == 25 :
-                        self.game.count_boss_speed += 5   
+                    if self.game.count_boss == 50 :
+                        self.game.count_boss_speed += 7   
                         self.game.animate_boss_hp += 1   
                         self.game.count_boss = 0
             else:
@@ -706,7 +713,7 @@ class Game():
         self.loading  = False
         self.paused = False
         self.poison = False
-        self.boss_hp = 100
+        self.boss_hp = 200
         self.count_boss = 0
         self.count_boss_speed = 0
         self.pause_image = self.get_resize_image('in_pause', SCREEN_WIDTH, SCREEN_HEIGHT)

@@ -7,7 +7,7 @@ PATH_SND_BULLET_TO_BRICK = 'assets/sounds/bullet_to_brick.ogg'
 PATH_SND_NOTSHOOT = 'assets/sounds/notshoot.ogg'
 PATH_SND_RELOAD = 'assets/sounds/reload.ogg'
 PATH_SND_PORTAL = 'assets/sounds/portal.ogg'
-
+PATH_SND_BOSS = 'assets/sounds/boss.ogg'
 PATH_MUSIC_MENU = 'assets/music/menu.mp3'
 
 PATH_IMG_DIR = 'assets/images/'
