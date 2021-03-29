@@ -1,4 +1,5 @@
 import sys
+import os
 import math
 import pygame
 import threading
@@ -29,6 +30,9 @@ info_object = pygame.display.Info()
 SCREEN_WIDTH, SCREEN_HEIGHT = info_object.current_w, info_object.current_h
 constx, consty = SCREEN_WIDTH / 1366, SCREEN_HEIGHT / 768
 consth = 1.00682012 if constx == 1 else 1
+
+if not os.path.exists('save'):
+    os.makedirs('save')
 
 # Add intro in game
 pygame.display.set_caption('Intro')
@@ -117,8 +121,9 @@ class Menu:
             if self.menu_point == 0:
                 self.isFirstMenu = False
             elif self.menu_point == 1:
-                print("Here will be the Titles")
-                sys.exit()
+                end.preview(fullscreen = True)
+                end.close()
+                #sys.exit()
             elif self.menu_point == 2:
                 sys.exit()
     
