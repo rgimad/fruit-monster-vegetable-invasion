@@ -673,6 +673,8 @@ class Pause():
                 game.main()
                 print("начать заново")  
             elif mp_x>168 * constx and mp_x<453 * constx and mp_y>595 * consty and mp_y<669 * consty: 
+                pygame.mixer.music.load(PATH_MUSIC_MENU)
+                pygame.mixer.music.play(loops=-1)
                 self.game.running = False                         
 
 class Camera():
@@ -1030,7 +1032,7 @@ class Game():
             self.bonus.bonus_type(read_bonus)     
 
         self.init_cam()
-        while self.player.health >  1 and self.running and index_level <= 5:   # this cicle defines health of our player
+        while self.player.health > 0 and self.running and index_level <= 5:   # this cicle defines health of our player
             self.clock.tick(self.FPS)                    # delay according to fps
 
             for event in pygame.event.get():             # check events
@@ -1148,8 +1150,11 @@ class Game():
 
         # check status of player's health 
         if self.player.health <= 0:
-           print("0 hp - Game over!")
-           self.running = False
+            pygame.mixer.music.pause()
+            pygame.mixer.music.load(PATH_MUSIC_MENU)
+            pygame.mixer.music.play(loops=-1)
+            print("0 hp - Game over!")
+            self.running = False
         self.delete_all_objects()
 
 
