@@ -6,7 +6,6 @@ import threading
 import time
 import numpy as np
 from random import shuffle
-# from moviepy.editor import VideoFileClip # library to add video in proj
 import LeeMovement as lee
 import random as rd
 import PIL
@@ -31,13 +30,6 @@ consth = 1.00682012 if constx == 1 else 1
 
 if not os.path.exists('save'):
     os.makedirs('save')
-
-# Add intro in game
-# pygame.display.set_caption('Intro')
-# intro = VideoFileClip('assets/videos/introo.mp4', target_resolution=(SCREEN_HEIGHT, SCREEN_WIDTH))
-# end = VideoFileClip('assets/videos/end.mp4', target_resolution=(SCREEN_HEIGHT, SCREEN_WIDTH))
-# intro.preview(fullscreen = True)
-# intro.close()
 
 pygame.init()
 shoot_sound = pygame.mixer.Sound(PATH_SND_SHOOT3)
@@ -1102,11 +1094,13 @@ class Game():
                             self.player.state = "RELOADING"
                             if not self.add_bonus_to_player:
                                 if index_level == 5:
-                                    end.preview(fullscreen = True)
-                                    sys.exit()
-                                self.bonus.run(self.x, event, *pygame.mouse.get_pos())   
+                                    pygame.mixer.music.pause()
+                                    pygame.mixer.music.load(PATH_MUSIC_MENU)
+                                    pygame.mixer.music.play(loops=-1)
+                                    self.running = False
+                                else:
+                                    self.bonus.run(self.x, event, *pygame.mouse.get_pos())   
                             else:
-                                # index_level += 1
                                 self.running = False
                                 pass
                             break
