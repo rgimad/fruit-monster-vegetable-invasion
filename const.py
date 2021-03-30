@@ -54,6 +54,7 @@ PATH_IMG_TEXTURE_MOB = 'assets/images/texture_mob.png'
 PATH_IMG_TEXTURE_MOB_DOWN = 'assets/images/texture_mob_down.png'
 PATH_IMG_TEXTURE_MOB_RIGHT = 'assets/images/texture_mob_right.png'
 PATH_IMG_TEXTURE_MOB_UP = 'assets/images/texture_mob_up.png'
+PATH_IMG_SECRET_TERR_BLOCK = 'assets/images/wall_hor.png'
 
 PATH_SAVE_MAX_OPENED_LVL = 'save/max_opened_level.txt'
 PATH_SAVE_OPEN_LVL = 'save/open_lvl.txt'

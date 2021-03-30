@@ -91,7 +91,8 @@ class Menu:
         self.backInChoiceLvl = [(1070*constx, 720*consty, u'Назад', (250, 97, 3), (255, 165, 0),  2)]
 
     def __del__(self):
-        print('Destructor called, Menu deleted.')
+        pass
+        # print('Destructor called, Menu deleted.')
 
     def render(self, screen, font, points, num_punkt):
         for i in points:
@@ -462,7 +463,6 @@ class Mob(pygame.sprite.Sprite):
             self.game.player.texture_collide(self.game.player.damage_of_mobs, self.game.player.damage_of_mobs)
             self.game.player.health -= 1
             pygame.mixer.Channel(1).play(collision_sound)
-            print("player mob collision")  
             if self.game.poison == True:
                 if index_level != 5:
                    self.kill() 
@@ -476,7 +476,6 @@ class Bullet(pygame.sprite.Sprite):
         self.game = game
         self.x = x  
         self.y = y
-        self.damage = 1
         self.speed = speed
         self.speed_x1 = x1
         self.speed_y1 = y1
@@ -506,19 +505,14 @@ class Bullet(pygame.sprite.Sprite):
             if pygame.sprite.groupcollide(self.game.mobs, self.game.bullets, True, True):
                  pygame.mixer.Channel(1).play(rd.choice(damage_sound))
                  self.kill()              
-                 print("bullet killed mob")     
         else:
-            if self.game.boss_hp != 1:
+            if self.game.boss_hp != self.game.player.bullet_size:
                 if pygame.sprite.spritecollideany(self, self.game.mobs):
                     pygame.mixer.Channel(6).play(rd.choice(damage_sound))
                     self.kill()
-                    if self.game.player.bullet_size == 3:
-                        self.damage = 2
-                    else:
-                        self.damage = 1   
-                    self.game.boss_hp -=  self.damage     
-                    self.game.count_boss += 1  
-                    if self.game.count_boss == 50 :
+                    self.game.boss_hp -=  self.game.player.bullet_size     
+                    self.game.count_boss += self.game.player.bullet_size  
+                    if self.game.count_boss == 60:
                         self.game.count_boss_speed += 7   
                         self.game.animate_boss_hp += 1   
                         self.game.count_boss = 0
@@ -573,45 +567,55 @@ class Player(pygame.sprite.Sprite):
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(0, self.player_speed)
             if pygame.sprite.spritecollideany(self, self.game.mobs):
-                print("He's crashed")
                 self.rect.move_ip(0, self.damage_of_mobs)
                 self.texture_collide(0, self.damage_of_mobs)
                 self.health -= 1
                 pygame.mixer.Channel(1).play(collision_sound)
+            for entity in self.game.terrain_blocks:
+                if pygame.sprite.collide_rect(entity, self) and entity.block_type == ':':
+                    self.rect.move_ip(0, self.player_speed)
+
         if pressed_keys[K_DOWN] or pressed_keys[K_s]:
             self.rect.move_ip(0, self.player_speed)
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(0, -self.player_speed)
             if pygame.sprite.spritecollideany(self, self.game.mobs):
-                print("He's crashed")
                 self.rect.move_ip(0, -self.damage_of_mobs)
                 self.texture_collide(0, -self.damage_of_mobs)
                 self.health -= 1
                 pygame.mixer.Channel(1).play(collision_sound)
+            for entity in self.game.terrain_blocks:
+                if pygame.sprite.collide_rect(entity, self) and entity.block_type == ':':
+                    self.rect.move_ip(0, -self.player_speed)
+
         if pressed_keys[K_LEFT] or pressed_keys[K_a]:
             self.rect.move_ip(-self.player_speed, 0)
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(self.player_speed, 0)
             if pygame.sprite.spritecollideany(self, self.game.mobs):
-                print("He's crashed")
                 self.rect.move_ip(self.damage_of_mobs, 0)
                 self.texture_collide(self.damage_of_mobs, 0)
                 self.health -= 1
                 pygame.mixer.Channel(1).play(collision_sound)
+            for entity in self.game.terrain_blocks:
+                if pygame.sprite.collide_rect(entity, self) and entity.block_type == ':':
+                    self.rect.move_ip(self.player_speed, 0)
+
         if pressed_keys[K_RIGHT] or pressed_keys[K_d]:
             self.rect.move_ip(self.player_speed, 0)
             if pygame.sprite.spritecollideany(self, self.game.bricks):
                 self.rect.move_ip(-self.player_speed, 0)
             if pygame.sprite.spritecollideany(self, self.game.mobs):
-                print("He's crashed")
                 self.rect.move_ip(-self.damage_of_mobs, 0)
                 self.texture_collide(-self.damage_of_mobs, 0)
                 self.health -= 1
                 pygame.mixer.Channel(1).play(collision_sound)
+            for entity in self.game.terrain_blocks:
+                if pygame.sprite.collide_rect(entity, self) and entity.block_type == ':':
+                    self.rect.move_ip(-self.player_speed, 0)
         if pygame.sprite.groupcollide(self.game.mobs, self.game.bullets, True, True):
            pygame.mixer.Channel(1).play(rd.choice(damage_sound))
            self.kill()              
-           print("bullet killed mob")
 
         # Keep player on the map
         if self.rect.left < 0:
@@ -677,7 +681,6 @@ class Pause():
                 self.game.running = False
                 game = Game()
                 game.main()
-                print("начать заново")  
             elif mp_x>168 * constx and mp_x<453 * constx and mp_y>595 * consty and mp_y<669 * consty: 
                 pygame.mixer.music.load(PATH_MUSIC_MENU)
                 pygame.mixer.music.play(loops=-1)
@@ -759,7 +762,7 @@ class Game():
             self.wave_amount = 0
         else:
             self.wave_amount = 2
-        self.boss_hp = 200
+        self.boss_hp = 240
         self.count_boss = 0
         self.count_boss_speed = 0
         self.pause_image = self.get_resize_image('in_pause', SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -787,7 +790,8 @@ class Game():
         
 
     def __del__(self):
-        print('Destructor called, Game deleted.')
+        pass
+        # print('Destructor called, Game deleted.')
 
     def get_resize_image(self, name_img, width, height):
         img = Image.open(PATH_IMG_DIR + name_img + '.png')
@@ -888,6 +892,9 @@ class Game():
                         self.terrain_blocks.add(new_terrain_block)
                     elif cell == ',':
                         new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size, 1, index_level)
+                        self.terrain_blocks.add(new_terrain_block)
+                    elif cell == ":":
+                        new_terrain_block = TerrainBlock(j*self.map.cell_size, i*self.map.cell_size, cell, index_level)
                         self.terrain_blocks.add(new_terrain_block)  
                     elif cell == 'B':
                         new_brick = Brick(j*self.map.cell_size, i*self.map.cell_size, cell)
@@ -1071,7 +1078,6 @@ class Game():
                     self.mobs_path_to_player()
                 elif event.type == update_wave_of_mobs and self.wave_amount > 0 and index_level != 5:
                     self.isWaveOfMobs = True
-                    print('Hello, new Wave')
                     self.draw_map() # without classic objects, only spawn of mobs
                     self.wave_amount -= 1
 
@@ -1159,10 +1165,8 @@ class Game():
             pygame.mixer.music.pause()
             pygame.mixer.music.load(PATH_MUSIC_MENU)
             pygame.mixer.music.play(loops=-1)
-            print("0 hp - Game over!")
             self.running = False
         self.delete_all_objects()
-
 
 pygame.font.init()     
 
