@@ -476,6 +476,7 @@ class Bullet(pygame.sprite.Sprite):
         self.game = game
         self.x = x  
         self.y = y
+        self.damage = 1
         self.speed = speed
         self.speed_x1 = x1
         self.speed_y1 = y1
@@ -509,8 +510,13 @@ class Bullet(pygame.sprite.Sprite):
         else:
             if self.game.boss_hp != 1:
                 if pygame.sprite.spritecollideany(self, self.game.mobs):
+                    pygame.mixer.Channel(6).play(rd.choice(damage_sound))
                     self.kill()
-                    self.game.boss_hp -= 1   
+                    if self.game.player.bullet_size == 3:
+                        self.damage = 2
+                    else:
+                        self.damage = 1   
+                    self.game.boss_hp -=  self.damage     
                     self.game.count_boss += 1  
                     if self.game.count_boss == 50 :
                         self.game.count_boss_speed += 7   
