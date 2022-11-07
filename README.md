@@ -7,3 +7,8 @@
 
 
 ![Screenshot](https://raw.githubusercontent.com/rgimad/fruit-monster-vegetable-invasion/main/screenshots/scr3.png "Screenshot 3")
+
+![Screenshot](https://raw.githubusercontent.com/rgimad/fruit-monster-vegetable-invasion/main/screenshots/scr4.png "Screenshot 4")
+
+![Screenshot](https://raw.githubusercontent.com/rgimad/fruit-monster-vegetable-invasion/main/screenshots/scr5.png "Screenshot 5")
+
