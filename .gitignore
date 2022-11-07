@@ -5,3 +5,4 @@
 /main.spec
 /save/*
 __pycache__/*
+env/*
